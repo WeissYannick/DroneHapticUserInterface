@@ -16,9 +16,9 @@ namespace DHUI.VR
     /// </summary>
     public class DHUI_DroneTracking_Vive : DHUI_DroneTracking_Base
     {
-        // ActionPose of the tracker attached to the drone.
-        private SteamVR_Action_Pose droneActionPose = null;
-
+        [SerializeField][Tooltip("ActionPose of the tracker attached to the drone.")]
+        private SteamVR_Action_Pose _VRTrackerActionPose = null;
+        
         // Index of the tracker attached to the drone.
         private uint droneTrackerIndex = 0;
         
@@ -35,14 +35,15 @@ namespace DHUI.VR
                 Debug.LogError("<b>DHUI</b> | DroneTracking_Vive | OpenVR-System was not found.");
                 return;
             }
-            // This should only be 'null' in the beginning and filled with the ActionPose of the VRTracker in the following iterations.
-            if (droneActionPose == null)
+            // If we didn't set the Action Pose.
+            if (_VRTrackerActionPose == null)
             {
-                // Check if there is an Active VRTracker.
-                if (SteamVR_Input._default.VRTracker.GetActive(SteamVR_Input_Sources.Any))
+                // Check if there is an Active Action called "VRTracker".
+                SteamVR_Action_Pose ap = SteamVR_Input.GetAction<SteamVR_Action_Pose>("VRTracker");
+                if (ap.GetActive(SteamVR_Input_Sources.Any))
                 {
-                    droneActionPose = SteamVR_Input._default.VRTracker;
-                    droneTrackerIndex = droneActionPose.GetDeviceIndex(SteamVR_Input_Sources.Any);
+                    _VRTrackerActionPose = ap;
+                    droneTrackerIndex = _VRTrackerActionPose.GetDeviceIndex(SteamVR_Input_Sources.Any);
                 }
                 else
                 {
@@ -52,9 +53,9 @@ namespace DHUI.VR
             }
 
             // Copy Position and Rotation to the 'virtualTrackerTransform' and save the Velocity.
-            virtualTrackerTransform.position = droneActionPose.GetLocalPosition(SteamVR_Input_Sources.Any);
-            virtualTrackerTransform.rotation = droneActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(-90, 90, 90);
-            velocity = droneActionPose.GetVelocity(SteamVR_Input_Sources.Any);
+            virtualTrackerTransform.position = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any);
+            virtualTrackerTransform.rotation = _VRTrackerActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(-90, 90, 90);
+            velocity = _VRTrackerActionPose.GetVelocity(SteamVR_Input_Sources.Any);
 
             // Calculate the current pose for our device. [See https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose]
             TrackedDevicePose_t[] trackedDevicePoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];

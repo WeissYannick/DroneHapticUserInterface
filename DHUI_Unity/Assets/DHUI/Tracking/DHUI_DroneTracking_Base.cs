@@ -13,6 +13,9 @@ namespace DHUI.Core
         [SerializeField]
         [Tooltip("The virtual object, which should copy the tracker's real world position and rotation.")]
         protected Transform virtualTrackerTransform = null;
+        
+        [Tooltip("The offset of the tracker to the actual drone center.")]
+        public Vector3 trackerToDroneOffset = Vector3.zero;
 
         // Current velocity of the drone.
         protected Vector3 velocity = Vector3.zero;

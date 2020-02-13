@@ -53,7 +53,7 @@ namespace DHUI.VR
             }
 
             // Copy Position and Rotation to the 'virtualTrackerTransform' and save the Velocity.
-            virtualTrackerTransform.position = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any);
+            virtualTrackerTransform.position = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any) - trackerToDroneOffset;
             virtualTrackerTransform.rotation = _VRTrackerActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(-90, 90, 90);
             velocity = _VRTrackerActionPose.GetVelocity(SteamVR_Input_Sources.Any);
 

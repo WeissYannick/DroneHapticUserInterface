@@ -137,7 +137,7 @@ namespace DHUI.Core
         /// <returns>Wether setting the state has worked.</returns>
         public bool TrySetDroneState(DroneState _newDroneState)
         {
-            if (!emergencyMode)
+            if (emergencyMode)
             {
                 Debug.LogError("<b>DHUI</b> | DroneController | Tried to change drone state, but drone is in emergency mode.");
                 return false;
@@ -392,7 +392,8 @@ namespace DHUI.Core
         /// </summary>
         private void UpdateVirtualDrone()
         {
-            _virtualDrone = _droneTracker.droneTransform;
+            _virtualDrone.position = _droneTracker.droneTransform.position;
+            _virtualDrone.rotation = _droneTracker.droneTransform.rotation;
         }
 
         /// <summary>
@@ -438,8 +439,8 @@ namespace DHUI.Core
         {
             UpdatePID(true, false);
             
-            if (values[0] > 1004) {
-                values[0] -= 4;
+            if (values[0] > 1001) {
+                values[0] -= 1;
             }
             values[1] = _PIDCalculator.GetRoll();
             values[2] = _PIDCalculator.GetPitch();
@@ -463,7 +464,7 @@ namespace DHUI.Core
         /// <param name="followTarget">Wether the drone should follow the target. If set to false, the PID error will be 0 -> drone will stop moving/hover.</param>
         private void UpdatePID(bool _calculatePIDs, bool followTarget = true)
         {
-            _PIDCalculator.ToggleCalculation(_calculatePIDs);
+            _PIDCalculator.ToggleCalculation(_calculatePIDs);            
             if (_calculatePIDs)
             {
                 if (followTarget)
@@ -482,7 +483,7 @@ namespace DHUI.Core
         /// </summary>
         private void ResetValues()
         {
-            values = defaultValues;
+            defaultValues.CopyTo(values,0);
         }
         #endregion Methods | Drone Behaviours
 

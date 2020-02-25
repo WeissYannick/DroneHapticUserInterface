@@ -11,7 +11,9 @@ namespace DHUI.Core
         public float time = 5;
         public bool smoothInOut = false;
         public bool waitForDrone = false;
-        
+        public float waitingTimeout = 3f;
+
+
         protected Vector3 startPosition = Vector3.zero;
         protected Quaternion startRotation = Quaternion.identity;
 
@@ -34,7 +36,7 @@ namespace DHUI.Core
                 {
                     _finished = true;
                 }
-                else if (DroneReachedTarget())
+                else if (DroneReachedTarget() || Time.time >= startTime + time + waitingTimeout)
                 {
                     _finished = true;
                 }

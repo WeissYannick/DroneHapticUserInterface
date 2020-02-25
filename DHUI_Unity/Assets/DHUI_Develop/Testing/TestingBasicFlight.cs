@@ -17,6 +17,7 @@ public class TestingBasicFlight : MonoBehaviour
             cmd.targetPosition = transform.position;
             cmd.targetRotation = transform.rotation;
             cmd.time = 3;
+            cmd.waitForDrone = true;
             controller.AddToBackOfQueue(cmd);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))

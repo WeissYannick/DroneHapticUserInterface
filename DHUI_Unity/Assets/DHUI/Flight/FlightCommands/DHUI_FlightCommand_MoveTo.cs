@@ -34,7 +34,7 @@ namespace DHUI.Core
                 {
                     _finished = true;
                 }
-                else if (DroneFinished())
+                else if (DroneReachedTarget())
                 {
                     _finished = true;
                 }

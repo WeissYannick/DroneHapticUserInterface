@@ -10,12 +10,8 @@ namespace DHUI.Core
 {
     public class DHUI_DroneTracking_Base : MonoBehaviour
     {
-        [SerializeField]
-        [Tooltip("The virtual object, which should copy the tracker's real world position and rotation.")]
-        protected Transform virtualTrackerTransform = null;
-        
-        [Tooltip("The offset of the tracker to the actual drone center.")]
-        public Vector3 trackerToDroneOffset = Vector3.zero;
+        [SerializeField][Tooltip("The virtual object, which should show the drone's real world position and rotation.")]
+        protected Transform trackedTransform = null;
 
         // Current velocity of the drone.
         protected Vector3 velocity = Vector3.zero;
@@ -24,21 +20,21 @@ namespace DHUI.Core
         [Tooltip("Shows if the Tracking is working as expected.")]
         public bool trackingOK = false;
 
-        // Transform of the tracked drone.
+       
         public Transform droneTransform
         {
-            get { return virtualTrackerTransform; }
+            get { return trackedTransform; }
         }
         // Current Position of the drone.
         public Vector3 dronePosition
         {
-            get { return virtualTrackerTransform.position; }
+            get { return trackedTransform.position; }
         }
 
         // Current Forward-Vector of the drone.
         public Vector3 droneForward
         {
-            get { return virtualTrackerTransform.forward; }
+            get { return trackedTransform.forward; }
         }
 
         // Current Velocity of the drone.
@@ -53,17 +49,17 @@ namespace DHUI.Core
         /// <returns>Distance-Vector to target from local space of drone.</returns>
         public Vector3 droneDistanceToTarget(Vector3 _target)
         {
-            return virtualTrackerTransform.InverseTransformDirection(_target - dronePosition);
+            return trackedTransform.InverseTransformDirection(_target - dronePosition);
         }
         #endregion Public Information
 
         #region Internal
         /// <summary>
-        /// On Start: Check the 'virtualTrackerTransform' and default it to 'this.transform' if not set.
+        /// On Start: Check the 'trackedTransform' and default it to 'this.transform' if not set.
         /// </summary>
         private void Start()
         {
-            if (virtualTrackerTransform == null) virtualTrackerTransform = transform;
+            if (trackedTransform == null) trackedTransform = transform;
         }
         /// <summary>
         /// Update the Tracker in every Update.

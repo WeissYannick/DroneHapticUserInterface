@@ -130,6 +130,16 @@ namespace DHUI.Core
         #endregion Enums
 
         #region Methods | Public
+
+        /// <summary>
+        /// Gets the current state of the drone.
+        /// </summary>
+        /// <returns>Current state.</returns>
+        public DroneState GetDroneState()
+        {
+            return currentDroneState;
+        }
+
         /// <summary>
         /// Tries to set the DroneState to the given value. This changes the behaviour and output to the actual drone.
         /// </summary>

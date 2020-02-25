@@ -16,24 +16,24 @@ public class TestingBasicFlight : MonoBehaviour
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo();
             cmd.targetPosition = transform.position;
             cmd.targetRotation = transform.rotation;
-            cmd.time = 0;
+            cmd.time = 3;
             controller.AddToBackOfQueue(cmd);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            DHUI_FlightCommand_Hold cmd = new DHUI_FlightCommand_Hold();
-            cmd.duration = 20;
+            DHUI_FlightCommand_LandAt cmd = new DHUI_FlightCommand_LandAt(transform.position, transform.rotation);
+            cmd.floorLanding = true;
             controller.AddToBackOfQueue(cmd);
         }
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            DHUI_FlightCommand_Hover cmd = new DHUI_FlightCommand_Hover();
-            cmd.duration = 20;
+            DHUI_FlightCommand_WaitForDrone cmd = new DHUI_FlightCommand_WaitForDrone();
+            cmd.waitingTimeout = 10f;
             controller.AddToBackOfQueue(cmd);
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            DHUI_FlightCommand_LandHere cmd = new DHUI_FlightCommand_LandHere();
+            DHUI_FlightCommand_LandAtStart cmd = new DHUI_FlightCommand_LandAtStart();
             controller.AddToBackOfQueue(cmd);
         }
     }

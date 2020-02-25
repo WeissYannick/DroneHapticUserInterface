@@ -152,7 +152,7 @@ namespace DHUI.Core
                     // We should only be able to perform the 'TouchDown' if we are already in 'Landing'. 
                     // This may be changed, if we need to be able to TouchDown from everywhere, but it is saver this way. 
                     // (Note: When an error occurs, like 'Tracking Loss', or the user uses an 'Emergency Off'-switch, the drone controller will handle this himself. This controller only needs to handle successful flights.)
-                    if (currentFlightState == FlightState.Landing)
+                    if (currentFlightState == FlightState.Landing || currentFlightState == FlightState.TouchDown)
                     {
                         if (_droneController.TrySetDroneState(DHUI_DroneController.DroneState.Land))
                         {
@@ -188,12 +188,21 @@ namespace DHUI.Core
         }
 
         /// <summary>
+        /// Gets the height of the floor.
+        /// </summary>
+        /// <returns>Height of floor in Meters.</returns>
+        public float GetFloorHeight()
+        {
+            return _droneController._floorY;
+        }
+
+        /// <summary>
         /// Gets the height at which the TouchDown should be initiated when landing.
         /// </summary>
         /// <returns>The height threshold (Y-Value) we want the TouchDown-Procedure to begin.</returns>
         public float GetTriggerHeight_TouchDown()
         {
-            return _droneController._floorY + (_droneController._th_RegularLanding_InitLand_TargetCmFromFloor / 100);
+            return (_droneController._th_RegularLanding_InitLand_TargetCmFromFloor / 100);
         }
 
         /// <summary>
@@ -202,7 +211,7 @@ namespace DHUI.Core
         /// <returns>The height threshold (Y-Value) we want the Parking/ShutOff to begin.</returns>
         public float GetTriggerHeight_ShutOff()
         {
-            return _droneController._floorY + (_droneController._th_RegularLanding_ShutOff_TargetCmFromFloor / 100);
+            return (_droneController._th_RegularLanding_ShutOff_TargetCmFromFloor / 100);
         }
 
         /// <summary>

@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using DHUI.Core;
 
+/// <summary>
+/// This class simulates the Tracking of the Drone by following the leader.
+/// </summary>
 public class DHUI_DroneTracking_Simulated_FollowLeader : DHUI_DroneTracking_Base
 {
+    [Header("Simulation Setup")]
+
     [Tooltip("The leader object controlled by the FlightController/FlightCommands. We will simply follow this object around with some speed and smoothing.")]
     public Transform _leaderToFollow = null;
 
@@ -19,7 +24,7 @@ public class DHUI_DroneTracking_Simulated_FollowLeader : DHUI_DroneTracking_Base
 
     [Tooltip("The speed with which we simulate free fall.")]
     public float _freeFallSpeed = 0.04f;
-
+    
     [Tooltip("Turn this on to simulate tracking lost.")]
     public bool _simulateTrackingLost = false;
     /// <summary>

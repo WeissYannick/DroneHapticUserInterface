@@ -10,13 +10,26 @@ using DHUI.Core;
 /// </summary>
 public class DHUI_DroneTracking_Vive : DHUI_DroneTracking_Base
 {
+    [Header("ViveTracker Setup")]
+    
     [SerializeField][Tooltip("ActionPose of the tracker attached to the drone.")]
     private SteamVR_Action_Pose _VRTrackerActionPose = null;
         
     [Tooltip("The position offset of the Vive-tracker to the actual drone center.")]
     public Vector3 trackerToDroneOffset_Position = Vector3.zero;
-        
-    // Index of the tracker attached to the drone.
+
+    [Tooltip("The rotation offset (Euler) of the Vive-tracker to the actual drone orientation.")]
+    public Vector3 trackerToDroneOffset_Rotation = new Vector3(90,0,0);
+
+    [Tooltip("Wether the real tracked pose should be used as global or local pose of 'trackedTransform'. " +
+        "Only set this to true, if you know what you are doing! " +
+        "If this is set to true, the (real) tracked position and rotation will be set as local position and rotation of 'trackedTransform'. " +
+        "This results in the 'trackedTransform' being influenced by its parents' offsets and scalings.")]
+    public bool trackTransformAsLocal = false;
+    
+    /// <summary>
+    /// Index of the tracker attached to the drone.
+    /// </summary>
     private uint droneTrackerIndex = 0;
         
     /// <summary>
@@ -50,8 +63,19 @@ public class DHUI_DroneTracking_Vive : DHUI_DroneTracking_Base
         }
 
         // Copy Position and Rotation to the 'trackedTransform' and save the Velocity.
-        trackedTransform.localPosition = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any) - trackerToDroneOffset_Position;
-        trackedTransform.localRotation = _VRTrackerActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(90,0,0) ;
+        // If 'trackTransformAsLocal' is true: Copy the real tracked pose to 'trackedTransform' as localPosition & localRotation
+        if (trackTransformAsLocal)
+        {
+            trackedTransform.localPosition = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any) - trackerToDroneOffset_Position;
+            trackedTransform.localRotation = _VRTrackerActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(trackerToDroneOffset_Rotation);
+        }
+        // If 'trackTransformAsLocal' is false (= default): Copy the real tracked pose to 'trackedTransform' as (global) position & rotation
+        else
+        {
+            trackedTransform.position = _VRTrackerActionPose.GetLocalPosition(SteamVR_Input_Sources.Any) - trackerToDroneOffset_Position;
+            trackedTransform.rotation = _VRTrackerActionPose.GetLocalRotation(SteamVR_Input_Sources.Any) * Quaternion.Euler(trackerToDroneOffset_Rotation);
+        }
+        
         velocity = _VRTrackerActionPose.GetVelocity(SteamVR_Input_Sources.Any);
 
         // Calculate the current pose for our device. [See https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetDeviceToAbsoluteTrackingPose]

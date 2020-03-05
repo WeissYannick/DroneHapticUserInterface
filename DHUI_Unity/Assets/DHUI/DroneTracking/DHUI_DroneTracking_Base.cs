@@ -10,17 +10,15 @@ namespace DHUI.Core
 {
     public class DHUI_DroneTracking_Base : MonoBehaviour
     {
+        [Header("Base Setup")]
         [SerializeField][Tooltip("The virtual object, which should show the drone's real world position and rotation.")]
         protected Transform trackedTransform = null;
 
-        // Current velocity of the drone.
-        protected Vector3 velocity = Vector3.zero;
-
         #region Public Information
+        [Header("Base Information")]
         [Tooltip("Shows if the Tracking is working as expected.")]
         public bool trackingOK = false;
-
-       
+        
         public Transform droneTransform
         {
             get { return trackedTransform; }
@@ -42,6 +40,10 @@ namespace DHUI.Core
         {
             get { return velocity; }
         }
+        
+        // Current velocity of the drone.
+        protected Vector3 velocity = Vector3.zero;
+
         /// <summary>
         /// Calculates the current distance-vector from the real position of the drone and the given target in local space of the drone.
         /// </summary>

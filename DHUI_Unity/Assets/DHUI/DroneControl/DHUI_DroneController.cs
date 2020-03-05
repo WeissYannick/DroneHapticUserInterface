@@ -80,8 +80,16 @@ namespace DHUI.Core
 
         #region Fields | Info
         [Header("Info")]
+
+        [Tooltip("Information about current State/Mode of the drone.")]
+        public DroneState droneState_Info = DroneState.Off;
+
+        [Tooltip("Information about wether the drone is currently in emergency mode.")]
+        public bool emergencyMode_Info = false;
+
         [Tooltip("Public Information: Wether the tracking was lost for too long (beyond the defined threshold).")]
         public bool error_TrackingLost_Info = false;
+
         #endregion Fields | Info
 
         #region Fields | Private
@@ -323,6 +331,7 @@ namespace DHUI.Core
         {
             CheckUp();
             UpdateVirtualDrone();
+            UpdateInfo();
 
             switch (currentDroneState)
             {
@@ -365,7 +374,6 @@ namespace DHUI.Core
                 {
                     Debug.LogWarning("<b>DHUI</b> | DroneController | Lost Tracking for " + error_trackingLost_timer.ElapsedMilliseconds + "ms.");
                     error_trackingLost_timer.Stop();
-                    error_TrackingLost_Info = false;
                     error_trackingLost_internal = false;
                 }
             }
@@ -380,14 +388,12 @@ namespace DHUI.Core
                 {
                     if (error_trackingLost_timer.ElapsedMilliseconds > _th_TrackingLost_MaxMsUntilLand && _th_TrackingLost_MaxMsUntilLand >= 0)
                     {
-                        error_TrackingLost_Info = true;
                         error_trackingLost_internal = true;
                         ForceSetDroneState(DroneState.Land);
                         SetEmergencyMode(true);
                     }
                     else if (error_trackingLost_timer.ElapsedMilliseconds > _th_TrackingLost_MaxMsUntilHover && _th_TrackingLost_MaxMsUntilHover >= 0)
                     {
-                        error_TrackingLost_Info = true;
                         error_trackingLost_internal = true;
                         ForceSetDroneState(DroneState.Hover);
                     }
@@ -404,6 +410,16 @@ namespace DHUI.Core
         {
             _virtualDrone.position = _droneTracker.droneTransform.position;
             _virtualDrone.rotation = _droneTracker.droneTransform.rotation;
+        }
+
+        /// <summary>
+        /// Updates information for users (publicly accessable and visible in Unity-Inspector).
+        /// </summary>
+        private void UpdateInfo()
+        {
+            droneState_Info = currentDroneState;
+            emergencyMode_Info = emergencyMode;
+            error_TrackingLost_Info = error_trackingLost_internal;
         }
 
         /// <summary>
@@ -448,13 +464,21 @@ namespace DHUI.Core
         private void DroneLand()
         {
             UpdatePID(true, false);
-            
-            if (values[0] > 1001) {
+            if (_droneTracker.dronePosition.y <= (_floorY + _th_SaveShutDown_MaxCmFromFloor / 100) && values[0] >= 1004)
+            {
+                values[0] -= 4;
+            }
+            else if (values[0] >= 1001) {
                 values[0] -= 1;
             }
             values[1] = _PIDCalculator.GetRoll();
             values[2] = _PIDCalculator.GetPitch();
             values[3] = _PIDCalculator.GetYaw();
+
+            if (values[0] <= 1000)
+            {
+                ForceSetDroneState(DroneState.Off);
+            }
         }
 
         /// <summary>

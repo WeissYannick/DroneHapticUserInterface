@@ -26,10 +26,14 @@ namespace DHUI.Core
         #region Fields | Info
         [Header("Info")]
         [Tooltip("Information about the current Flight state. This is only used for information and manually changing this does not effect anything.")]
-        public FlightState currentFlightStateInfo = FlightState.Parked;
+        public FlightState currentFlightState_Info = FlightState.Parked;
 
-        [Tooltip("The number of commands currently in the queue, not counting the currently processed command. This is only used for information and manually changing this does not effect anything.")]
-        public int commandsInQueue = 0;
+        [Tooltip("Name of the currently processed command. This is only used for information and manually changing this does not effect anything.")]
+        public string currentProcessedCommand_Info = "None";
+                
+        [Tooltip("Names of the commands currently in the queue. This is only used for information and manually changing this does not effect anything.")]
+        public List<string> commandsInQueue_Info = new List<string>();
+        
         #endregion Fields | Info
 
         #region Fields | Private
@@ -107,11 +111,32 @@ namespace DHUI.Core
         private void Update()
         {
             UpdateCurrentCommand();
+            UpdateInfo();
+            
+        }
+
+        private void UpdateInfo()
+        {
+            currentFlightState_Info = currentFlightState;
+
+            if (currentProcessedCommand != null)
+            {
+                currentProcessedCommand_Info = currentProcessedCommand.GetType().ToString();
+            }
+            else
+            {
+                currentProcessedCommand_Info = "None";
+            }
 
             if (queuedCommands != null)
             {
-                commandsInQueue = queuedCommands.Count;
+                commandsInQueue_Info.Clear();
+                foreach (DHUI_FlightCommand_Base cmd in queuedCommands)
+                {
+                    commandsInQueue_Info.Add(cmd.GetType().ToString());
+                }
             }
+
         }
 
         #endregion Methods | Start/Update
@@ -128,13 +153,14 @@ namespace DHUI.Core
         /// <returns>The actual FlightState we set.</returns>
         public FlightState TrySetFlightState(FlightState _flightState)
         {
+            DHUI_DroneController.DroneState lastDroneState = _droneController.GetDroneState();
             switch (_flightState)
             {
                 case FlightState.Flying:
                     // If we are currently parked and now start to fly, set the state to 'TakeOff' and save the Pose of where the drone was parked.
                     if (_droneController.TrySetDroneState(DHUI_DroneController.DroneState.Follow))
                     {
-                        if (currentFlightState == FlightState.Parked)
+                        if (currentFlightState == FlightState.Parked || lastDroneState == DHUI_DroneController.DroneState.Off)
                         {
                             currentFlightState = FlightState.Takeoff;
                             droneStartingPose = new Pose(virtualDrone.position, virtualDrone.rotation);
@@ -178,13 +204,10 @@ namespace DHUI.Core
                     }
                     break;
                 case FlightState.Parked:
-                    // Only set the state to parked (and shut the drone off), when we already touched down.
+                    // Only set the state to parked, when we already touched down.
                     if (currentFlightState == FlightState.TouchDown)
                     {
-                        if (_droneController.TrySetDroneState(DHUI_DroneController.DroneState.Off))
-                        {
-                            currentFlightState = FlightState.Parked;
-                        }
+                        currentFlightState = FlightState.Parked;
                     }
                     else
                     {
@@ -194,9 +217,6 @@ namespace DHUI.Core
                 default:
                     break;
             }
-
-            currentFlightStateInfo = currentFlightState;
-
             return currentFlightState;
         }
 
@@ -250,6 +270,10 @@ namespace DHUI.Core
                 currentProcessedCommand = queuedCommands[0];
                 queuedCommands.RemoveAt(0);
                 StartCurrentCommand();
+            }
+            else
+            {
+                currentProcessedCommand = null;
             }
         }
 

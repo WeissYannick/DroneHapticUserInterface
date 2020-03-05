@@ -4,20 +4,53 @@ using UnityEngine;
 
 namespace DHUI.Core
 {
+    /// <summary>
+    /// FlightCommand | 
+    /// Makes the drone move to a new pose.
+    /// </summary>
     public class DHUI_FlightCommand_MoveTo : DHUI_FlightCommand_Base
     {
+        /// <summary>
+        /// Position to move to.
+        /// </summary>
         public Vector3 targetPosition = Vector3.zero;
+
+        /// <summary>
+        /// Rotation to move to.
+        /// </summary>
         public Quaternion targetRotation = Quaternion.identity;
+
+        /// <summary>
+        /// Time to move to the new target.
+        /// </summary>
         public float time = 5;
+
+        /// <summary>
+        /// Wether the movement animation shoudl smooth in and out.
+        /// </summary>
         public bool smoothInOut = false;
+
+        /// <summary>
+        /// Wether we will wait for the drone to catch up to the leader before we consider the command finished.
+        /// </summary>
         public bool waitForDrone = false;
+
+        /// <summary>
+        /// If 'waitForDrone' is true, how long will we wait, until we timeout and consider the command finished.
+        /// </summary>
         public float waitingTimeout = 3f;
 
-
+        /// <summary>
+        /// Starting position of the leader.
+        /// </summary>
         protected Vector3 startPosition = Vector3.zero;
+
+        /// <summary>
+        /// Starting orientation of the leader.
+        /// </summary>
         protected Quaternion startRotation = Quaternion.identity;
 
-
+        
         public override void StartCommand(DHUI_FlightController _flightController, Transform _leader, Transform _drone)
         {
             base.StartCommand(_flightController, _leader, _drone);
@@ -44,19 +77,23 @@ namespace DHUI.Core
 
         }
 
-
+        /// <summary>
+        /// Animates the leader towards the given target position & rotation in the given time.
+        /// </summary>
+        /// <returns></returns>
         private bool UpdateLeader()
         {
+            // Set the pose to the target pose instantly if time is 0 or less.
             if (time <= 0)
             {
-                SetPositionToEnd();
+                SetPoseToEnd();
                 return true;
             }
             else
             {
                 float timeSinceStart = Time.time - startTime;
                 float fraction = timeSinceStart / time;
-
+                
                 if (fraction < 1)
                 {
                     if (smoothInOut)
@@ -71,18 +108,26 @@ namespace DHUI.Core
                 }
                 else
                 {
-                    SetPositionToEnd();
+                    SetPoseToEnd();
                     return true;
                 }
             }
         }
 
+        /// <summary>
+        /// Lerps/Slerps between the starting and target position/rotation.
+        /// </summary>
+        /// <param name="fraction">Fraction of total animation in the range 0-1.</param>
         private void Move_Linear(float fraction)
         {
             leader.position = Vector3.Lerp(startPosition, targetPosition, fraction);
             leader.rotation = Quaternion.Slerp(startRotation, targetRotation, fraction);
         }
 
+        /// <summary>
+        /// Lerps/Slerps between the starting and target position/rotation with smoothing at beginning & end.
+        /// </summary>
+        /// <param name="fraction">Fraction of total animation in the range 0-1.</param>
         private void Move_SmoothInOut(float fraction)
         {
             float smoothStep = Mathf.SmoothStep(0f, 1f, fraction);
@@ -90,7 +135,10 @@ namespace DHUI.Core
             leader.rotation = Quaternion.Slerp(startRotation, targetRotation, smoothStep);
         }
 
-        private void SetPositionToEnd()
+        /// <summary>
+        /// Sets the leaders pose to the target pose.
+        /// </summary>
+        private void SetPoseToEnd()
         {
             leader.position = targetPosition;
             leader.rotation = targetRotation;

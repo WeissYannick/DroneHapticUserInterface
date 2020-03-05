@@ -8,40 +8,63 @@ using UnityEngine;
 /// </summary>
 namespace DHUI.Core
 {
-    public class DHUI_DroneTracking_Base : MonoBehaviour
+    /// <summary>
+    /// Base Class of Drone Tracking. 
+    /// The tracking implementations (e.g. with ViveTracker) should derive from this.
+    /// </summary>
+    public abstract class DHUI_DroneTracking_Base : MonoBehaviour
     {
+        /// <summary>
+        /// The virtual object, which should show the drone's real world position and rotation
+        /// </summary>
         [Header("Base Setup")]
         [SerializeField][Tooltip("The virtual object, which should show the drone's real world position and rotation.")]
         protected Transform trackedTransform = null;
 
         #region Public Information
+
+        /// <summary>
+        /// Shows if the Tracking is working as expected.
+        /// </summary>
         [Header("Base Information")]
         [Tooltip("Shows if the Tracking is working as expected.")]
         public bool trackingOK = false;
         
+        /// <summary>
+        /// The transform of the drone.
+        /// </summary>
         public Transform droneTransform
         {
             get { return trackedTransform; }
         }
-        // Current Position of the drone.
+
+        /// <summary>
+        /// Current Position of the drone.
+        /// </summary>
         public Vector3 dronePosition
         {
             get { return trackedTransform.position; }
         }
-
-        // Current Forward-Vector of the drone.
+        
+        /// <summary>
+        /// Current Forward-Vector of the drone.
+        /// </summary>
         public Vector3 droneForward
         {
             get { return trackedTransform.forward; }
         }
 
-        // Current Velocity of the drone.
+        /// <summary>
+        /// Public Getter for current Velocity of the drone.
+        /// </summary>
         public Vector3 droneVelocity
         {
             get { return velocity; }
         }
         
-        // Current velocity of the drone.
+        /// <summary>
+        /// Current velocity of the drone. 
+        /// </summary>
         protected Vector3 velocity = Vector3.zero;
 
         /// <summary>

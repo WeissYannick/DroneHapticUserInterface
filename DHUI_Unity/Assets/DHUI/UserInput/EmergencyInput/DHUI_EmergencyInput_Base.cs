@@ -9,13 +9,13 @@ using UnityEngine;
 namespace DHUI.Core
 {
     /// <summary>
-    /// This class handles emergency inputs that force the droneController to change it's behaviour.
-    /// This is required (as a safety precaution) and can force the dorne to Hover, Land or ShutOff in emergencies.
+    /// This base class handles emergency inputs that force the droneController to change it's behaviour.
+    /// This is required (as a safety precaution) and can force the drone to Hover, Land or ShutOff in emergencies.
     /// </summary>
     public abstract class DHUI_EmergencyInput_Base : MonoBehaviour
     {
         DHUI_DroneController controller = null;
-
+        
         /// <summary>
         /// Sets up the Drone Controller Instance, which has control over the (real) drone. 
         /// </summary>

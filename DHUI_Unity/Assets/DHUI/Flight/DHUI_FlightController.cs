@@ -33,19 +33,29 @@ namespace DHUI.Core
         #endregion Fields | Info
 
         #region Fields | Private
-        // Transform of the virtual representation of the drone from the DHUI_DroneController.
+        /// <summary>
+        /// Transform of the virtual representation of the drone from the DHUI_DroneController.
+        /// </summary>
         private Transform virtualDrone = null;
         
-        // Current State of the Flight.
+        /// <summary>
+        /// Current State of the Flight.
+        /// </summary>
         private FlightState currentFlightState = FlightState.Parked;
-        
-        // The List of Commands that will be processed next. 
+
+        /// <summary>
+        /// The List of Commands that will be processed next.  
+        /// </summary>
         private List<DHUI_FlightCommand_Base> queuedCommands = new List<DHUI_FlightCommand_Base>();
-
-        // The Command currently processed by the controller.
+        
+        /// <summary>
+        /// The Command currently processed by the controller. 
+        /// </summary>
         private DHUI_FlightCommand_Base currentProcessedCommand = null;
-
-        // The Pose the drone is starting in (Last parked position/rotation before TakeOff).
+        
+        /// <summary>
+        /// The Pose the drone is starting in (Last parked position/rotation before TakeOff).
+        /// </summary>
         private Pose droneStartingPose = Pose.identity;
         #endregion Fields | Private
 
@@ -128,6 +138,9 @@ namespace DHUI.Core
                         {
                             currentFlightState = FlightState.Takeoff;
                             droneStartingPose = new Pose(virtualDrone.position, virtualDrone.rotation);
+                            _leader.position = virtualDrone.position;
+                            _leader.rotation = virtualDrone.rotation;
+                            
                         }
                         // If we are not parked, we can just set the state to 'Flying'
                         else

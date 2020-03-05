@@ -106,6 +106,7 @@ namespace DHUI.Core
                 _droneFinishedTrigger_angle = droneFinishedTrigger_angle_default;
             }
             float degreeOffset = Mathf.Abs(drone.rotation.y - leader.rotation.y) * 180;
+            
             return (degreeOffset <= _droneFinishedTrigger_angle);
         }
         

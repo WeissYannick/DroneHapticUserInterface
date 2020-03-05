@@ -41,6 +41,9 @@ namespace DHUI.BasicUtils
         /// </summary>
         public bool copyRotation = true;
 
+        /// <summary>
+        /// Every FixedUpdate we copy the position/rotation.
+        /// </summary>
         private void FixedUpdate()
         {
             if (mode == CopyTransform_Modes.Global)

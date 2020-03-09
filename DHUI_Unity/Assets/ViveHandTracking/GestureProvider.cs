@@ -64,7 +64,7 @@ public class GestureProvider : MonoBehaviour {
   private bool initialized = false;
 
   [SerializeField]
-  private GestureOption option;
+  private GestureOption option = null;
   internal int lastIndex = -1;
 
   void Awake() {

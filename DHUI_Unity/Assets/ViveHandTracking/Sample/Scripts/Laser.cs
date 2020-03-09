@@ -9,7 +9,7 @@ class Laser : MonoBehaviour {
   private const float angularVelocity = 50.0f;
 
   public GameObject laser = null;
-  public GameObject light = null;
+  public new GameObject light = null;
 
   private bool visible = false;
   private Renderer hit = null;

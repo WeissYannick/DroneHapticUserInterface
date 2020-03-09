@@ -195,7 +195,7 @@ namespace Leap.Unity.Animation {
     public class FloatEvent : UnityEvent<float> { }
 
     [SerializeField]
-    private EnumEventTable _eventTable;
+    private EnumEventTable _eventTable = default;
 
     public enum EventType {
       //OnProgress = 100, // Requires float Event data

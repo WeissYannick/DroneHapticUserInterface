@@ -29,7 +29,7 @@ namespace Leap.Unity {
   public class DetectorLogicGate : Detector {
     [SerializeField]
     [Tooltip("The list of observed detectors.")]
-    private List<Detector> Detectors;
+    private List<Detector> Detectors = new List<Detector>();
     /**
      * When true, all Detector components of the same game object
      * are added to the list of watched detectors on Awake. When false,

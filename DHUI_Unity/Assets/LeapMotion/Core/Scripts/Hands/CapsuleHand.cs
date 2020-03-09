@@ -26,19 +26,19 @@ namespace Leap.Unity {
     private static Color[] _rightColorList = { new Color(1.0f, 0.0f, 0.0f), new Color(1.0f, 1.0f, 0.0f), new Color(1.0f, 0.5f, 0.0f) };
 
     [SerializeField]
-    private Chirality handedness;
+    private Chirality handedness = Chirality.Left;
 
     [SerializeField]
-    private bool _showArm = true;
+    private bool _showArm = true; 
 
     [SerializeField]
     private bool _castShadows = true;
 
     [SerializeField]
-    private Material _material;
+    private Material _material = null;
 
     [SerializeField]
-    private Mesh _sphereMesh;
+    private Mesh _sphereMesh = null;
 
     [MinValue(3)]
     [SerializeField]

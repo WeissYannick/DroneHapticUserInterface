@@ -36,7 +36,7 @@ namespace Leap.Unity {
     }
 
     [SerializeField]
-    private Chirality handedness;
+    private Chirality handedness = Chirality.Left;
     public override Chirality Handedness {
       get {
         return handedness;

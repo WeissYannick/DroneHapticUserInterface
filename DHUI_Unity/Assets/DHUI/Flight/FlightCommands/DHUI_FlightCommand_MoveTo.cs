@@ -50,6 +50,18 @@ namespace DHUI.Core
         /// </summary>
         protected Quaternion startRotation = Quaternion.identity;
 
+        /// <summary>
+        /// Constructs a new MoveTo-Command.
+        /// </summary>
+        /// <param name="_targetPosition">Position to move to.</param>
+        /// <param name="_targetRotation">Orientation to rotate to.</param>
+        /// <param name="_time">Amount of time for the translation and rotation.</param>
+        public DHUI_FlightCommand_MoveTo(Vector3 _targetPosition, Quaternion _targetRotation, float _time = 5)
+        {
+            targetPosition = _targetPosition;
+            targetRotation = _targetRotation;
+            time = _time;
+        }
         
         public override void StartCommand(DHUI_FlightController _flightController, Transform _leader, Transform _drone)
         {

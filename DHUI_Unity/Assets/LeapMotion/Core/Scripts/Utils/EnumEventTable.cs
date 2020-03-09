@@ -21,10 +21,10 @@ namespace Leap.Unity {
     private class Entry {
 
       [SerializeField]
-      public int enumValue;
+      public int enumValue = 0;
 
       [SerializeField]
-      public UnityEvent callback;
+      public UnityEvent callback = null;
     }
 
     //The actual serialized list of entries

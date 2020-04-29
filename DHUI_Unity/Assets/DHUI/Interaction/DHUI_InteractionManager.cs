@@ -6,6 +6,8 @@ namespace DHUI
 {
     public class DHUI_InteractionManager : MonoBehaviour
     {
+        #region Fields
+
         [Header("Members")]
         [SerializeField]
         private DHUI_Hand m_leftHand = null;
@@ -14,6 +16,7 @@ namespace DHUI
         [SerializeField]
         private Transform m_head = null;
         [Header("Settings")]
+        [SerializeField]
         private float _maxReachableDistance = 1;
 
         private enum ActiveHandState {
@@ -35,25 +38,31 @@ namespace DHUI
                 {
                     if (internal_hoveredInteractable != null)
                     {
-                        internal_hoveredInteractable.Hover_End();
+                        internal_hoveredInteractable.Hover_End(mainHand);
                     }
                     if (value != null)
                     {
-                        value.Hover_Start();
+                        value.Hover_Start(mainHand);
                     }
                     internal_hoveredInteractable = value;
                 }
             }
         }
-        
+
+        #endregion Fields
+
+        #region UpdateLoop
+
         private void FixedUpdate()
         {
             UpdateHands();
             UpdateInteractables();
         }
 
+        #endregion UpdateLoop
+
         #region Hands
-        
+
         private void UpdateHands()
         {
             UpdateActiveHandState();
@@ -131,6 +140,12 @@ namespace DHUI
 
         private void UpdateInteractables() {
 
+            CheckForHoveredInteractable();
+            UpdateCurrentHoveredInteractable();
+        }
+
+        private void CheckForHoveredInteractable()
+        {
             float closestDistance = float.MaxValue;
             DHUI_Interactable closestInteractable = null;
             foreach (DHUI_Interactable interactable in registeredInteractables)
@@ -157,10 +172,16 @@ namespace DHUI
             {
                 HoveredInteractable = null;
             }
-
         }
+
+        private void UpdateCurrentHoveredInteractable()
+        {
+            HoveredInteractable?.Hover_Stay(mainHand);
+        }
+
         #endregion Interactables.Updating
 
         #endregion Interactables
+        
     }
 }

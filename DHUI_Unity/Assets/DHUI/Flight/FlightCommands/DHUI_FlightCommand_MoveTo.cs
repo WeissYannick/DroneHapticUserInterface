@@ -21,9 +21,9 @@ namespace DHUI.Core
         public Quaternion targetRotation = Quaternion.identity;
 
         /// <summary>
-        /// Time to move to the new target.
+        /// Speed (in m/s) used to calculate time to move to the new target.
         /// </summary>
-        public float time = 5;
+        public float speed = 0.5f;
 
         /// <summary>
         /// Wether the movement animation shoudl smooth in and out.
@@ -51,16 +51,36 @@ namespace DHUI.Core
         protected Quaternion startRotation = Quaternion.identity;
 
         /// <summary>
+        /// Time to move to the new target.
+        /// </summary>
+        protected float time = 5;
+
+        /// <summary>
+        /// Wether Time was set manually.
+        /// </summary>
+        private bool manualTimeSet = false;
+
+        /// <summary>
         /// Constructs a new MoveTo-Command.
         /// </summary>
         /// <param name="_targetPosition">Position to move to.</param>
         /// <param name="_targetRotation">Orientation to rotate to.</param>
         /// <param name="_time">Amount of time for the translation and rotation.</param>
-        public DHUI_FlightCommand_MoveTo(Vector3 _targetPosition, Quaternion _targetRotation, float _time = 5)
+        public DHUI_FlightCommand_MoveTo(Vector3 _targetPosition, Quaternion _targetRotation, float _speed = 0.5f)
         {
             targetPosition = _targetPosition;
             targetRotation = _targetRotation;
+            speed = _speed;
+        }
+
+        /// <summary>
+        /// Sets the time to fly to target manually. Speed and Distance at the Start of the Command will therefore not be used to calculate the time.
+        /// </summary>
+        /// <param name="_time">Time to fly to target.</param>
+        public void SetTimeManually(float _time)
+        {
             time = _time;
+            manualTimeSet = true;
         }
         
         public override void StartCommand(DHUI_FlightController _flightController, Transform _leader, Transform _drone)
@@ -69,6 +89,11 @@ namespace DHUI.Core
 
             startPosition = leader.position;
             startRotation = leader.rotation;
+
+            if (!manualTimeSet)
+            {
+                time = Vector3.Distance(startPosition, targetPosition) / speed;
+            }
         }
 
         public override void UpdateCommand(out bool _finished)

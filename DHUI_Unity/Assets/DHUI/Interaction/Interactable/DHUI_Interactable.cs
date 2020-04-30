@@ -9,14 +9,14 @@ namespace DHUI
     {
         [Header("Members")]
         [SerializeField]
-        private DHUI_InteractionManager m_interactionManager = null;
+        protected DHUI_InteractionManager m_interactionManager = null;
         [SerializeField]
-        private DHUI_FlightController m_flightController = null;
+        protected DHUI_FlightController m_flightController = null;
         [SerializeField]
-        private Transform m_contactCenterPoint = null;
+        protected Transform m_contactCenterPoint = null;
         [Header("Advanced")]
         [SerializeField]
-        private bool _manualRegistering = false;
+        protected bool _manualRegistering = false;
         
         public Vector3 ContactCenterPoint
         {
@@ -81,21 +81,19 @@ namespace DHUI
             m_interactionManager?.DeregisterInteractable(this);
         }
 
-        public void Hover_Start(DHUI_Hand _hand)
+        public virtual void Hover_Start(DHUI_Hand _hand)
         {
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation);
-            m_flightController.AddToFrontOfQueue(cmd, true, true);
-            Debug.Log(gameObject.name + " | Hover_Start");
+            
         }
 
-        public void Hover_Stay(DHUI_Hand _hand)
+        public virtual void Hover_Stay(DHUI_Hand _hand)
         {
-            transform.LookAt(_hand.Position);
+            
         }
 
-        public void Hover_End(DHUI_Hand _hand)
+        public virtual void Hover_End(DHUI_Hand _hand)
         {
-            Debug.Log(gameObject.name + " | Hover_End");
+            
         }
     }
 }

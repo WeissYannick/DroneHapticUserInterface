@@ -25,7 +25,9 @@ namespace DHUI
         protected override void UpdateHandStatus()
         {
             IsActive = m_leapRiggedHand.IsTracked;
-            Position = m_leapRiggedHand.GetPalmPosition();
+            //Position = m_leapRiggedHand.GetPalmPosition();
+
+            Position = m_leapRiggedHand.fingers[1].GetTipPosition();
         }
     }
 }

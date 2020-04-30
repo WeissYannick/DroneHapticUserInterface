@@ -16,7 +16,7 @@ namespace DHUI.Core
     public class DHUI_DroneController : MonoBehaviour
     {
         #region Fields | Setup
-        [Header("Setup")]       
+        [Header("Members")]       
         [SerializeField][Tooltip("The target object. This is necessary to always get the currently targeted position/orientation for the drone to fly to.")]
         private Transform _target = null;
 
@@ -32,8 +32,18 @@ namespace DHUI.Core
         [SerializeField][Tooltip("The script handling the output of the values to the serial.")]
         private DHUI_SerialOutput _serialOutput = null;
 
-        [SerializeField][Tooltip("The script handling the emergency inputs (e.g. Emerency Hover, Emergency Land, Emergency ShutOff). This is required as a safety precaution.")]
+        [SerializeField][Tooltip("The script handling the emergency inputs (e.g. Emergency Hover, Emergency Land, Emergency ShutOff). This is required as a safety precaution.")]
         private DHUI_EmergencyInput_Base _emergencyInputs = null;
+
+        [Header("Faces")]
+        [SerializeField][Tooltip("Transform of the center point of the face looking forward.")]
+        private Transform _frontFace = null;
+        [SerializeField][Tooltip("Transform of the center point of the face looking backward.")]
+        private Transform _backFace = null;
+        [SerializeField][Tooltip("Transform of the center point of the face looking left.")]
+        private Transform _leftFace = null;
+        [SerializeField][Tooltip("Transform of the center point of the face looking right.")]
+        private Transform _rightFace = null;
 
         #endregion Fields | Setup
 
@@ -135,6 +145,11 @@ namespace DHUI.Core
         /// Land: The drone will slowly decrease its Throttle to softly land on floor.
         /// </summary>
         public enum DroneState { Off, Follow, Hover, Land }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum DroneActivePoint { Center, Front, Back, Left, Right }
         #endregion Enums
 
         #region Methods | Public

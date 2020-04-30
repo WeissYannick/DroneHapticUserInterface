@@ -15,6 +15,8 @@ namespace DHUI
         private DHUI_Hand m_rightHand = null;
         [SerializeField]
         private Transform m_head = null;
+        [SerializeField]
+        private Transform m_interactionPoint = null;
         [Header("Settings")]
         [SerializeField]
         private float _maxReachableDistance = 1;
@@ -24,7 +26,6 @@ namespace DHUI
         }
         private ActiveHandState activeHandState = ActiveHandState.None;
         private DHUI_Hand mainHand = null;
-        private Vector3 interactionCenterPoint = Vector3.zero;
 
         private HashSet<DHUI_Interactable> registeredInteractables = new HashSet<DHUI_Interactable>();
 
@@ -99,16 +100,16 @@ namespace DHUI
                 case ActiveHandState.Both:
                 case ActiveHandState.Right:
                     mainHand = m_rightHand;
-                    interactionCenterPoint = mainHand.Position;
+                    m_interactionPoint.position = mainHand.Position;
                     break;
                 case ActiveHandState.Left:
                     mainHand = m_leftHand;
-                    interactionCenterPoint = mainHand.Position;
+                    m_interactionPoint.position = mainHand.Position;
                     break;
                 case ActiveHandState.None:
                 default:
                     mainHand = null;
-                    interactionCenterPoint = m_head.position;
+                    m_interactionPoint.position = m_head.position;
                     break;
             }
         }
@@ -155,7 +156,7 @@ namespace DHUI
                     continue;
                 }
 
-                float distance = Vector3.Distance(interactionCenterPoint, interactable.ContactCenterPoint);
+                float distance = Vector3.Distance(m_interactionPoint.position, interactable.ContactCenterPoint);
 
                 if (distance < closestDistance)
                 {

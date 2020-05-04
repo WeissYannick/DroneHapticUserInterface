@@ -16,6 +16,12 @@ namespace DHUI
             get; protected set;
         }
 
+        public InteractionPointModes InteractionPointMode
+        {
+            get; protected set;
+        }
+
+
         private void FixedUpdate()
         {
             UpdateHandStatus();
@@ -23,6 +29,12 @@ namespace DHUI
 
         protected virtual void UpdateHandStatus()
         {
+        }
+
+        
+        public enum InteractionPointModes
+        {
+            Index, Palm
         }
     }
 }

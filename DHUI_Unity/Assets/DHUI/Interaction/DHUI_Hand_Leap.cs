@@ -25,9 +25,17 @@ namespace DHUI
         protected override void UpdateHandStatus()
         {
             IsActive = m_leapRiggedHand.IsTracked;
-            //Position = m_leapRiggedHand.GetPalmPosition();
-
-            Position = m_leapRiggedHand.fingers[1].GetTipPosition();
+            
+            if (Vector3.Distance(m_leapRiggedHand.fingers[2].GetTipPosition(), m_leapRiggedHand.fingers[1].GetTipPosition()) < 0.05f)
+            {
+                InteractionPointMode = InteractionPointModes.Palm;
+                Position = m_leapRiggedHand.GetPalmPosition();
+            }
+            else
+            {
+                InteractionPointMode = InteractionPointModes.Index;
+                Position = m_leapRiggedHand.fingers[1].GetTipPosition();
+            }
         }
     }
 }

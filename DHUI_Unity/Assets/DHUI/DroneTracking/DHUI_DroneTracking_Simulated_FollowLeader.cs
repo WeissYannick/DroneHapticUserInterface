@@ -38,7 +38,7 @@ public class DHUI_DroneTracking_Simulated_FollowLeader : DHUI_DroneTracking_Base
         switch (_droneController.GetDroneState())
         {
             case DHUI_DroneController.DroneState.Follow:
-                trackedTransform.position = Vector3.Lerp(trackedTransform.position, _leaderToFollow.position, _followSpeed);
+                trackedTransform.position = Vector3.Lerp(trackedTransform.position, _leaderToFollow.position + _droneController.contactPointOffset, _followSpeed);
                 trackedTransform.rotation = Quaternion.Slerp(trackedTransform.rotation, _leaderToFollow.rotation, _followSpeed);
                 velocity = Vector3.zero;
                 break;

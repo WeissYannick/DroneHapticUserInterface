@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using System.Diagnostics;
+using System;
 
 /// <summary>
 /// This Namespace contains the Core features of DHUI – Drone Haptic User Interface.
@@ -16,34 +17,27 @@ namespace DHUI.Core
     public class DHUI_DroneController : MonoBehaviour
     {
         #region Fields | Setup
-        [Header("Members")]       
-        [SerializeField][Tooltip("The target object. This is necessary to always get the currently targeted position/orientation for the drone to fly to.")]
+        [Header("Members")]
+        [SerializeField] [Tooltip("The target object. This is necessary to always get the currently targeted position/orientation for the drone to fly to.")]
         private Transform _target = null;
 
-        [SerializeField][Tooltip("This transform is controlled by this DroneController to serve as the virtual representation of the real drone.")]
+        [SerializeField] [Tooltip("This transform is controlled by this DroneController to serve as the virtual representation of the real drone.")]
         private Transform _virtualDrone = null;
 
-        [SerializeField][Tooltip("The drone tracker holding information about the drone, e.g. real Position, Orientation and Velocity")]
+        [SerializeField] [Tooltip("The drone tracker holding information about the drone, e.g. real Position, Orientation and Velocity")]
         private DHUI_DroneTracking_Base _droneTracker = null;
 
-        [SerializeField][Tooltip("The script handling the calculations of the PID-values for Throttle, Roll, Pitch and Yaw based on the drone's and target's transforms.")]
+        [SerializeField] [Tooltip("The script handling the calculations of the PID-values for Throttle, Roll, Pitch and Yaw based on the drone's and target's transforms.")]
         private DHUI_PIDCalculation _PIDCalculator = null;
 
-        [SerializeField][Tooltip("The script handling the output of the values to the serial.")]
+        [SerializeField] [Tooltip("The script handling the output of the values to the serial.")]
         private DHUI_SerialOutput _serialOutput = null;
 
-        [SerializeField][Tooltip("The script handling the emergency inputs (e.g. Emergency Hover, Emergency Land, Emergency ShutOff). This is required as a safety precaution.")]
+        [SerializeField] [Tooltip("The script handling the emergency inputs (e.g. Emergency Hover, Emergency Land, Emergency ShutOff). This is required as a safety precaution.")]
         private DHUI_EmergencyInput_Base _emergencyInputs = null;
 
-        [Header("Faces")]
-        [SerializeField][Tooltip("Transform of the center point of the face looking forward.")]
-        private Transform _frontFace = null;
-        [SerializeField][Tooltip("Transform of the center point of the face looking backward.")]
-        private Transform _backFace = null;
-        [SerializeField][Tooltip("Transform of the center point of the face looking left.")]
-        private Transform _leftFace = null;
-        [SerializeField][Tooltip("Transform of the center point of the face looking right.")]
-        private Transform _rightFace = null;
+        [SerializeField] [Tooltip("Transform of the center point of the contact face.")]
+        private Transform _contactPoint = null;
 
         #endregion Fields | Setup
 
@@ -67,13 +61,13 @@ namespace DHUI.Core
         #region Fields | Thresholds | Safety Thresholds
         [Tooltip("The threshold for minimum Centimeters above the floor, where it is save to fly to without the danger of crashing into the floor.")]
         public float _th_SaveFlying_MinCmFromFloor = 30f;
-        
+
         [Tooltip("The maximum threshold in Centimeters above the floor, where it is still save to shut off the drone.")]
         public float _th_SaveShutDown_MaxCmFromFloor = 10f;
 
         [Tooltip("The maximum value the throttle is allowed to have for a save shut off.")]
         public float _th_SaveShutDown_MaxThrottle = 1200f;
-        
+
         [Tooltip("The threshold of the maximum velocity the drone is allowed to have and still be save to shut off.")]
         public float _th_SaveShutDown_MaxVelocity = 2f;
         #endregion Fields | Thresholds | Safety Thresholds
@@ -81,7 +75,7 @@ namespace DHUI.Core
         #region Fields | Thresholds | Trigger Distances for Regular Landings
         [Tooltip("The trageted distance in Centimeters above the floor, where we want to initiate the soft landing behaviour.")]
         public float _th_RegularLanding_InitLand_TargetCmFromFloor = 30f;
-        
+
         [Tooltip("The targeted distance in Centimeters above the floor, where we want to initiate the shut off of the drone.")]
         public float _th_RegularLanding_ShutOff_TargetCmFromFloor = 2f;
         #endregion Fields | Thresholds | Trigger Distances for Regular Landings
@@ -104,18 +98,26 @@ namespace DHUI.Core
 
         #region Fields | Private
 
-        // Wether the Setup is correct and successful. Blocks the drone from starting (except with ForceSetDroneState).
+        /// <summary>
+        /// Wether the Setup is correct and successful. Blocks the drone from starting (except with ForceSetDroneState).
+        /// </summary>
         private bool setupCorrect = false;
 
-        // Wether the drone is currently in emergency mode. This blocks any changes in behaviour while true.
+        /// <summary>
+        /// Wether the drone is currently in emergency mode. This blocks any changes in behaviour while true.
+        /// </summary>
         private bool emergencyMode = false;
 
-        // Wether the tracking was lost for too long (beyond the defined threshold). This is used internally, while "error_trackingLost_info" is only used for public information.
+        /// <summary>
+        /// Wether the tracking was lost for too long (beyond the defined threshold). This is used internally, while "error_trackingLost_info" is only used for public information.
+        /// </summary>
         private bool error_trackingLost_internal = false;
 
-        // Stopwatch used to time the tracking loss.
+        /// <summary>
+        /// Stopwatch used to time the tracking loss.
+        /// </summary>
         private Stopwatch error_trackingLost_timer = new Stopwatch();
-        
+
         /* TODO
         public bool error_noFlyZone
         {
@@ -124,15 +126,30 @@ namespace DHUI.Core
         private bool error_noFlyZone_internal = false;
         */
 
-        // Current State the drone is in.
+        /// <summary>
+        /// Current State the drone is in.
+        /// </summary>
         private DroneState currentDroneState = DroneState.Off;
 
-        // The current values that should be output to the drone
-        // Channels:         Throttle, Roll, Pitch, Yaw, ----, ----, ----, ----)
+        /// <summary>
+        /// The current values that should be output to the drone
+        /// Channels:         Throttle, Roll, Pitch, Yaw, ----, ----, ----, ----)
+        /// </summary>
         private int[] values = { 1000, 1500, 1500, 1500, 1000, 1000, 1000, 1000 };
 
-        // The default/idle values of the channels.
+        /// <summary>
+        /// The default/idle values of the channels.
+        /// </summary>
         private readonly int[] defaultValues = { 1000, 1500, 1500, 1500, 1000, 1000, 1000, 1000 };
+
+        /// <summary>
+        /// The offset of the drone's center (position of '_virtualDrone') to the actual contact plane/point (position of '_contactPoint').
+        /// </summary>
+        public Vector3 contactPointOffset
+        {
+            private set;
+            get;
+        } = Vector3.zero;
 
         #endregion Fields | Private
 
@@ -279,6 +296,11 @@ namespace DHUI.Core
                 _virtualDrone = transform;
                 Debug.Log("<b>DHUI</b> | DroneController | No Transform for VirtualDrone was set in Inspector -> Defaulting to this transform. (\"" + gameObject.name + "\")");
             }
+            if (_contactPoint == null)
+            {
+                _contactPoint = _virtualDrone.transform;
+            }
+            contactPointOffset = _contactPoint.transform.position - _virtualDrone.transform.position;
             if (_droneTracker == null)
             {
                 _droneTracker = FindObjectOfType<DHUI_DroneTracking_Base>();
@@ -328,6 +350,7 @@ namespace DHUI.Core
                 }
             }
             _emergencyInputs.Setup(this);
+            
 
             if (_target != null && _droneTracker != null && _serialOutput != null && _PIDCalculator != null && _emergencyInputs != null)
             {
@@ -518,7 +541,8 @@ namespace DHUI.Core
             {
                 if (followTarget)
                 {
-                    _PIDCalculator.UpdateTrajectory(_droneTracker.dronePosition, _droneTracker.droneForward, _droneTracker.droneVelocity, _target.position, _target.forward, _droneTracker.droneDistanceToTarget(_target.position));
+                    Vector3 targetPos = _target.position - contactPointOffset;
+                    _PIDCalculator.UpdateTrajectory(_droneTracker.dronePosition, _droneTracker.droneForward, _droneTracker.droneVelocity, targetPos, _target.forward, _droneTracker.droneDistanceToTarget(targetPos));
                 }
                 else
                 {

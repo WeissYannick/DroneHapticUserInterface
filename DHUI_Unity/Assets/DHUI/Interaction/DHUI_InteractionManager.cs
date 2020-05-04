@@ -21,11 +21,17 @@ namespace DHUI
         [SerializeField]
         private float _maxReachableDistance = 1;
 
-        private enum ActiveHandState {
+        public enum ActiveHandState {
             None, Left, Right, Both
         }
-        private ActiveHandState activeHandState = ActiveHandState.None;
-        private DHUI_Hand mainHand = null;
+        public ActiveHandState activeHandState {
+            private set;
+            get;
+        } = ActiveHandState.None;
+        public DHUI_Hand mainHand {
+            private set;
+            get;
+        } = null;
 
         private HashSet<DHUI_Interactable> registeredInteractables = new HashSet<DHUI_Interactable>();
 
@@ -72,18 +78,18 @@ namespace DHUI
 
         private void UpdateActiveHandState()
         {
-            if (m_rightHand != null && m_rightHand.IsActive)
+            if (m_rightHand != null && m_rightHand.isActiveAndEnabled && m_rightHand.IsActive)
             {
-                if (m_leftHand != null && m_leftHand.IsActive)
-                {
-                    activeHandState = ActiveHandState.Right;
-                }
-                else
+                if (m_leftHand != null && m_leftHand.isActiveAndEnabled && m_leftHand.IsActive)
                 {
                     activeHandState = ActiveHandState.Both;
                 }
+                else
+                {
+                    activeHandState = ActiveHandState.Right;
+                }
             }
-            else if (m_leftHand != null && m_leftHand.IsActive)
+            else if (m_leftHand != null && m_leftHand.isActiveAndEnabled && m_leftHand.IsActive)
             {
                 activeHandState = ActiveHandState.Left;
             }

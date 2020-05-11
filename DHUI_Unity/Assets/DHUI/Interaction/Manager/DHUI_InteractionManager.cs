@@ -35,23 +35,23 @@ namespace DHUI
 
         private HashSet<DHUI_Interactable> registeredInteractables = new HashSet<DHUI_Interactable>();
 
-        private DHUI_Interactable internal_hoveredInteractable;
-        private DHUI_Interactable HoveredInteractable
+        private DHUI_Interactable internal_activeInteractable;
+        public DHUI_Interactable ActiveInteractable
         {
-            get { return internal_hoveredInteractable; }
-            set
+            get { return internal_activeInteractable; }
+            private set
             {
-                if (internal_hoveredInteractable != value)
+                if (internal_activeInteractable != value)
                 {
-                    if (internal_hoveredInteractable != null)
+                    if (internal_activeInteractable != null)
                     {
-                        internal_hoveredInteractable.Hover_End(mainHand);
+                        internal_activeInteractable.Hover_End(GetHoverEvent());
                     }
                     if (value != null)
                     {
-                        value.Hover_Start(mainHand);
+                        value.Hover_Start(GetHoverEvent());
                     }
-                    internal_hoveredInteractable = value;
+                    internal_activeInteractable = value;
                 }
             }
         }
@@ -147,11 +147,11 @@ namespace DHUI
 
         private void UpdateInteractables() {
 
-            CheckForHoveredInteractable();
-            UpdateCurrentHoveredInteractable();
+            CheckClosestInteractable();
+            UpdateCurrentActiveInteractable();
         }
 
-        private void CheckForHoveredInteractable()
+        private void CheckClosestInteractable()
         {
             float closestDistance = float.MaxValue;
             DHUI_Interactable closestInteractable = null;
@@ -173,22 +173,32 @@ namespace DHUI
 
             if (closestDistance <= _maxReachableDistance)
             {
-                HoveredInteractable = closestInteractable;
+                ActiveInteractable = closestInteractable;
             }
             else
             {
-                HoveredInteractable = null;
+                ActiveInteractable = null;
             }
         }
 
-        private void UpdateCurrentHoveredInteractable()
+        private void UpdateCurrentActiveInteractable()
         {
-            HoveredInteractable?.Hover_Stay(mainHand);
+            ActiveInteractable?.Hover_Stay(GetHoverEvent());
         }
 
         #endregion Interactables.Updating
 
         #endregion Interactables
+
+        #region HoverEvent
         
+        private DHUI_HoverEvent GetHoverEvent()
+        {
+            DHUI_HoverEvent hover = new DHUI_HoverEvent();
+            hover.InteractorPosition = m_interactionPoint.position;
+            return hover;
+        }
+
+        #endregion HoverEvent
     }
 }

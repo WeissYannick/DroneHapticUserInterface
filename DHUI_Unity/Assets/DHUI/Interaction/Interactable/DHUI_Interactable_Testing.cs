@@ -37,7 +37,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
 
     public UnityEvent OnActivated = null;
 
-    public override void Hover_Start(DHUI_Hand _hand)
+    public override void Hover_Start(DHUI_HoverEvent _hand)
     {
         DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation);
         m_flightController.AddToFrontOfQueue(cmd, true, true);
@@ -46,20 +46,19 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         SetDebugText(5, _activationDistance.ToString());
     }
 
-    public override void Hover_Stay(DHUI_Hand _hand)
+    public override void Hover_Stay(DHUI_HoverEvent _hand)
     {
-        if (_hand == null) return;
         if (m_debugCanvas != null)
             m_debugCanvas.SetActive(true);
 
 
-        float dist = Mathf.Abs(_hand.Position.z - ContactCenterPoint.z);
+        float dist = Mathf.Abs(_hand.InteractorPosition.z - ContactCenterPoint.z);
         SetDebugText(2, dist.ToString());
         if (mode == ModeTesting.Activated || mode == ModeTesting.Released)
         {
             SetMode(ModeTesting.Released);
         }
-        else if (Vector3.Angle(_hand.Position - ContactCenterPoint, m_contactCenterPoint.forward) > 90)
+        else if (Vector3.Angle(_hand.InteractorPosition - ContactCenterPoint, m_contactCenterPoint.forward) > 90)
         {
             
             if (dist < 0.01f)
@@ -78,8 +77,8 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
             m_hoverInformationObject.gameObject.SetActive(false);
         }
 
-        float x = _hand.Position.x;
-        float y = _hand.Position.y;
+        float x = _hand.InteractorPosition.x;
+        float y = _hand.InteractorPosition.y;
 
         float minX = ContactCenterPoint.x - transform.localScale.x * 0.5f;
         float maxX = ContactCenterPoint.x + transform.localScale.x * 0.5f;
@@ -116,7 +115,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         }
     }
 
-    public override void Hover_End(DHUI_Hand _hand)
+    public override void Hover_End(DHUI_HoverEvent _e)
     {
         m_hoverInformationObject.gameObject.SetActive(false);
         if (m_debugCanvas != null)

@@ -9,6 +9,8 @@ namespace DHUI
 {
     public class DHUI_Button : DHUI_Interactable
     {
+        #region Fields
+
         #region Inspector Setup
         [Header("Button.Setup")]
         [SerializeField]
@@ -32,22 +34,20 @@ namespace DHUI
 
         #endregion Inspector Setup
 
-        #region Events
-        public struct DHUI_ButtonEventArgs
-        {
-
-        }
+        #region Inspector Events
         [Serializable]
-        public class DHUI_ButtonEvent : UnityEvent<DHUI_ButtonEventArgs> { }
+        public class DHUI_ButtonActivationEvent : UnityEvent<DHUI_ButtonActivationEventArgs> { }
 
         [Header("Button.Events")]
-        public DHUI_ButtonEvent OnActivated = null;
-        
-        #endregion Events
+        public DHUI_ButtonActivationEvent OnActivationStart = null;
+        public DHUI_ButtonActivationEvent OnActivationStay = null;
+        public DHUI_ButtonActivationEvent OnActivationEnd = null;
+
+        #endregion Inspector Events
 
         #region Enums
 
-        public enum ButtonState
+        public enum ButtonInternalStates
         {
             Inactive, Hovered, Touched, Pressed, Activated
         }
@@ -59,11 +59,22 @@ namespace DHUI
 
         #endregion Enums
 
-        private ButtonState internal_buttonState;
+        #region Structs
+
+        public struct DHUI_ButtonActivationEventArgs
+        {
+            public float activationDuration;
+        }
+
+        #endregion Structs
+
+        #region States
+
+        private ButtonInternalStates internal_buttonState;
         /// <summary>
-        /// Current State of the button.
+        /// Current Internal State of the button.
         /// </summary>
-        public ButtonState CurrentButtonState
+        public ButtonInternalStates ButtonInternalState
         {
             get
             {
@@ -73,18 +84,22 @@ namespace DHUI
             {
                 if (internal_buttonState != value)
                 {
-                    if (value == ButtonState.Activated)
+                    if (value == ButtonInternalStates.Activated)
                     {
                         float currentTime = Time.time;
                         if (currentTime >= lastActivationTime + _activationCooldown)
                         {
                             lastActivationTime = currentTime;
-                            OnActivated?.Invoke(new DHUI_ButtonEventArgs());
+                            ButtonActivationState = true;
                         }
                         else
                         {
                             return;
                         }
+                    }
+                    else if (internal_buttonState == ButtonInternalStates.Activated && value != internal_buttonState)
+                    {
+                        ButtonActivationState = false;
                     }
 
                     internal_buttonState = value;
@@ -92,6 +107,37 @@ namespace DHUI
             }
         }
 
+        private bool internal_buttonActivationState = false;
+
+        /// <summary>
+        /// Current Activation State of the button. (true -> Activated, false -> Not activated).
+        /// </summary>
+        public bool ButtonActivationState
+        {
+            get
+            {
+                return internal_buttonActivationState;
+            }
+            protected set
+            {
+                if (value == internal_buttonActivationState) return;
+                if (value)
+                {
+                    currentActivationDuration = 0;
+                    Activation_Start(ConstructActivationEventArgs());
+                }
+                else
+                {
+                    Activation_End(ConstructActivationEventArgs());
+                }
+
+                internal_buttonActivationState = value;
+            }
+        }
+
+        #endregion States
+
+        #region Protected
         /// <summary>
         /// Current Distance between the Button ('ContactPlane') and Hand ('_hoverEvent.InteractorPosition').
         /// </summary>
@@ -107,27 +153,42 @@ namespace DHUI
         /// </summary>
         protected float currentActivationDistance = 0f;
 
+        #endregion Protected
+
+        #region Private
         /// <summary>
         /// Time of last button activation. Used to implement Activation-Cooldown.
         /// </summary>
         private float lastActivationTime = 0f;
 
+        /// <summary>
+        /// Duration of current activation/ duration of button being pressed (in seconds).
+        /// </summary>
+        private float currentActivationDuration = 0f;
 
-        public override void Hover_Start(DHUI_HoverEvent _hoverEvent)
+        #endregion Private
+
+        #endregion Fields
+
+        #region Methods
+        
+        #region Hover
+
+        public override void Hover_Start(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_Start(_hoverEvent);
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation, _droneSpeed_initialPositioning);
             m_flightController.AddToFrontOfQueue(cmd, true, true);
         }
 
-        public override void Hover_End(DHUI_HoverEvent _hoverEvent)
+        public override void Hover_End(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_End(_hoverEvent);
 
-            CurrentButtonState = ButtonState.Inactive;
+            ButtonInternalState = ButtonInternalStates.Inactive;
         }
 
-        public override void Hover_Stay(DHUI_HoverEvent _hoverEvent)
+        public override void Hover_Stay(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_Stay(_hoverEvent);
 
@@ -151,26 +212,70 @@ namespace DHUI
             {
                 if (hover_distance < _hover_touchThreshold)
                 {
-                    CurrentButtonState = ButtonState.Touched;
+                    ButtonInternalState = ButtonInternalStates.Touched;
                 }
                 else
                 {
-                    CurrentButtonState = ButtonState.Hovered;
+                    ButtonInternalState = ButtonInternalStates.Hovered;
                 }
             }
             else
             {
                 if (currentActivationDistance >= _activationDistance_threshold)
                 {
-                    CurrentButtonState = ButtonState.Activated;
+                    ButtonInternalState = ButtonInternalStates.Activated;
                 }
                 else
                 {
-                    CurrentButtonState = ButtonState.Pressed;
+                    ButtonInternalState = ButtonInternalStates.Pressed;
                 }
 
             }
         }
+
+        #endregion
+
+        #region Activation
+
+        public virtual void Activation_Start(DHUI_ButtonActivationEventArgs _buttonActivationEventArgs)
+        {
+            OnActivationStart?.Invoke(_buttonActivationEventArgs);
+        }
+
+        public virtual void Activation_End(DHUI_ButtonActivationEventArgs _buttonActivationEventArgs)
+        {
+            OnActivationEnd?.Invoke(_buttonActivationEventArgs);
+        }
+
+        public virtual void Activation_Stay(DHUI_ButtonActivationEventArgs _buttonActivationEventArgs)
+        {
+            OnActivationStay?.Invoke(_buttonActivationEventArgs);
+        }
+
+        protected DHUI_ButtonActivationEventArgs ConstructActivationEventArgs()
+        {
+            DHUI_ButtonActivationEventArgs args = new DHUI_ButtonActivationEventArgs();
+            args.activationDuration = currentActivationDuration;
+            return args;
+        }
+
+        protected void UpdateActivation()
+        {
+            if (ButtonActivationState)
+            {
+                currentActivationDuration = Time.time - lastActivationTime;
+                Activation_Stay(ConstructActivationEventArgs());
+            }
+        }
+
+        #endregion Activation
+
+        protected void Update()
+        {
+            UpdateActivation();
+        }
+
+        #endregion Methods
     }
 
 }

@@ -34,7 +34,7 @@ namespace DHUI
             private set;
         }
 
-        private void Start()
+        protected void Start()
         {
             if (m_interactionManager == null)
             {
@@ -55,7 +55,7 @@ namespace DHUI
             }
         }
 
-        private void OnDestroy()
+        protected void OnDestroy()
         {
             if (!_manualRegistering)
             {
@@ -86,17 +86,17 @@ namespace DHUI
             m_interactionManager?.DeregisterInteractable(this);
         }
 
-        public virtual void Hover_Start(DHUI_HoverEvent _hoverEvent)
+        public virtual void Hover_Start(DHUI_HoverEventArgs _hoverEvent)
         {
             
         }
 
-        public virtual void Hover_Stay(DHUI_HoverEvent _hoverEvent)
+        public virtual void Hover_Stay(DHUI_HoverEventArgs _hoverEvent)
         {
             
         }
 
-        public virtual void Hover_End(DHUI_HoverEvent _hoverEvent)
+        public virtual void Hover_End(DHUI_HoverEventArgs _hoverEvent)
         {
             
         }
@@ -106,7 +106,7 @@ namespace DHUI
     /// <summary>
     /// Event passed to Hover_Start, Hover_Stay and Hover_End
     /// </summary>
-    public struct DHUI_HoverEvent
+    public struct DHUI_HoverEventArgs
     {
         public Vector3 InteractorPosition;
     }

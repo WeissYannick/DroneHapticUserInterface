@@ -45,11 +45,11 @@ namespace DHUI
                 {
                     if (internal_activeInteractable != null)
                     {
-                        internal_activeInteractable.Hover_End(GetHoverEvent());
+                        internal_activeInteractable.Hover_End(GenerateHoverEventArgs());
                     }
                     if (value != null)
                     {
-                        value.Hover_Start(GetHoverEvent());
+                        value.Hover_Start(GenerateHoverEventArgs());
                     }
                     internal_activeInteractable = value;
                 }
@@ -183,7 +183,7 @@ namespace DHUI
 
         private void UpdateCurrentActiveInteractable()
         {
-            ActiveInteractable?.Hover_Stay(GetHoverEvent());
+            ActiveInteractable?.Hover_Stay(GenerateHoverEventArgs());
         }
 
         #endregion Interactables.Updating
@@ -192,9 +192,9 @@ namespace DHUI
 
         #region HoverEvent
         
-        private DHUI_HoverEvent GetHoverEvent()
+        private DHUI_HoverEventArgs GenerateHoverEventArgs()
         {
-            DHUI_HoverEvent hover = new DHUI_HoverEvent();
+            DHUI_HoverEventArgs hover = new DHUI_HoverEventArgs();
             hover.InteractorPosition = m_interactionPoint.position;
             return hover;
         }

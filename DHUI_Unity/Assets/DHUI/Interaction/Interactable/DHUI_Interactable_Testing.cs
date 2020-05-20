@@ -37,7 +37,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
 
     public UnityEvent OnActivated = null;
 
-    public override void Hover_Start(DHUI_HoverEvent _hand)
+    public override void Hover_Start(DHUI_HoverEventArgs _hand)
     {
         DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation);
         m_flightController.AddToFrontOfQueue(cmd, true, true);
@@ -46,7 +46,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         SetDebugText(5, _activationDistance.ToString());
     }
 
-    public override void Hover_Stay(DHUI_HoverEvent _hand)
+    public override void Hover_Stay(DHUI_HoverEventArgs _hand)
     {
         if (m_debugCanvas != null)
             m_debugCanvas.SetActive(true);
@@ -115,7 +115,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         }
     }
 
-    public override void Hover_End(DHUI_HoverEvent _e)
+    public override void Hover_End(DHUI_HoverEventArgs _e)
     {
         m_hoverInformationObject.gameObject.SetActive(false);
         if (m_debugCanvas != null)

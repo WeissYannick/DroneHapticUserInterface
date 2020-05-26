@@ -29,7 +29,7 @@ namespace DHUI
             private set;
         }
 
-        protected void Start()
+        protected virtual void Start()
         {
             if (m_interactionManager == null)
             {

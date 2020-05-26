@@ -28,7 +28,7 @@ namespace DHUI
         [SerializeField]
         protected float _hover_touchThreshold = 0.1f;
         [SerializeField]
-        protected GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Local;
+        protected GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Global;
         [SerializeField]
         protected float _activationDistance_threshold = 0.15f;
         [SerializeField]
@@ -38,11 +38,11 @@ namespace DHUI
         [SerializeField]
         protected float _droneSpeed_initialPositioning = 2f;
         [SerializeField]
-        protected float _droneSpeed_hovering = 0.5f;
+        protected float _droneSpeed_hovering = 2f;
         [SerializeField][Range(0,2)]
         protected float _droneResistance = 1f;
         [SerializeField]
-        protected bool _lockDroneXYWhilePressed = false;
+        protected bool _lockDroneXYWhilePressed = true;
 
         #endregion Inspector Setup
 

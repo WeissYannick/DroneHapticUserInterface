@@ -162,7 +162,7 @@ namespace DHUI
                     continue;
                 }
 
-                float distance = Vector3.Distance(m_interactionPoint.position, interactable.ContactCenterPoint);
+                float distance = Vector3.Distance(m_interactionPoint.position, interactable.CenterPoint);
 
                 if (distance < closestDistance)
                 {

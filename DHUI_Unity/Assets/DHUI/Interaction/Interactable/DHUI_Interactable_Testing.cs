@@ -39,7 +39,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
 
     public override void Hover_Start(DHUI_HoverEventArgs _hand)
     {
-        DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation);
+        DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint.position, m_centerPoint.rotation);
         m_flightController.AddToFrontOfQueue(cmd, true, true);
 
         SetDebugText(0, buttonMode);
@@ -52,13 +52,13 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
             m_debugCanvas.SetActive(true);
 
 
-        float dist = Mathf.Abs(_hand.InteractorPosition.z - ContactCenterPoint.z);
+        float dist = Mathf.Abs(_hand.InteractorPosition.z - CenterPoint.z);
         SetDebugText(2, dist.ToString());
         if (mode == ModeTesting.Activated || mode == ModeTesting.Released)
         {
             SetMode(ModeTesting.Released);
         }
-        else if (Vector3.Angle(_hand.InteractorPosition - ContactCenterPoint, m_contactCenterPoint.forward) > 90)
+        else if (Vector3.Angle(_hand.InteractorPosition - CenterPoint, m_centerPoint.forward) > 90)
         {
             
             if (dist < 0.01f)
@@ -80,19 +80,19 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         float x = _hand.InteractorPosition.x;
         float y = _hand.InteractorPosition.y;
 
-        float minX = ContactCenterPoint.x - transform.localScale.x * 0.5f;
-        float maxX = ContactCenterPoint.x + transform.localScale.x * 0.5f;
-        float minY = ContactCenterPoint.y - transform.localScale.y * 0.5f;
-        float maxY = ContactCenterPoint.y + transform.localScale.y * 0.5f;
+        float minX = CenterPoint.x - transform.localScale.x * 0.5f;
+        float maxX = CenterPoint.x + transform.localScale.x * 0.5f;
+        float minY = CenterPoint.y - transform.localScale.y * 0.5f;
+        float maxY = CenterPoint.y + transform.localScale.y * 0.5f;
         if (x < minX) x = minX;
         if (x > maxX) x = maxX;
         if (y < minY) y = minY;
         if (y > maxY) y = maxY;
         
-        float z = ContactCenterPoint.z;
+        float z = CenterPoint.z;
         m_hoverInformationObject.position = new Vector3(x,y,z);
         
-        SetDebugText(3, "X: " + ((x - ContactCenterPoint.x)/ (transform.localScale.x/2)).ToString("F2") + "                   Y: " +  ((y - ContactCenterPoint.y) / (transform.localScale.y / 2)).ToString("F2"));
+        SetDebugText(3, "X: " + ((x - CenterPoint.x)/ (transform.localScale.x/2)).ToString("F2") + "                   Y: " +  ((y - CenterPoint.y) / (transform.localScale.y / 2)).ToString("F2"));
 
         DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_hoverInformationObject.position, m_hoverInformationObject.rotation);
         m_flightController.AddToFrontOfQueue(cmd, true, true);
@@ -124,9 +124,9 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         SetMode(ModeTesting.Inactive);
     }
 
-    public void SetContactCenterPoint(Transform transform)
+    public void SetCenterPoint(Transform transform)
     {
-        m_contactCenterPoint = transform;
+        m_centerPoint = transform;
     }
 
     private void SetDebugText(int _index, string _string)

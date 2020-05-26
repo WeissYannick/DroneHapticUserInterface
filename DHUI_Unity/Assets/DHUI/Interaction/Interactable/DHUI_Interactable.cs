@@ -13,21 +13,16 @@ namespace DHUI
         [SerializeField]
         protected DHUI_FlightController m_flightController = null;
         [SerializeField]
-        protected Transform m_contactCenterPoint = null;
+        protected Transform m_centerPoint = null;
         [Header("Interactable.Advanced")]
         [SerializeField]
         protected bool _manualRegistering = false;
         
-        public Utils.MathPlane ContactPlane
+        public Vector3 CenterPoint
         {
-            get { return new Utils.MathPlane(m_contactCenterPoint); }
+            get { return m_centerPoint.position; }
         }
-
-        public Vector3 ContactCenterPoint
-        {
-            get { return m_contactCenterPoint.position; }
-        }
-
+        
         public bool IsDisabled
         {
             get;
@@ -44,11 +39,10 @@ namespace DHUI
             {
                 m_flightController = FindObjectOfType<DHUI_FlightController>();
             }
-            if (m_contactCenterPoint == null)
+            if (m_centerPoint == null)
             {
-                m_contactCenterPoint = transform;
+                m_centerPoint = transform;
             }
-
             if (!_manualRegistering)
             {
                 Register();

@@ -17,7 +17,7 @@ public class BasicTesting : MonoBehaviour
         {
            // Debug.Log(mp.GetDistance(transform.position));
 
-            Debug.Log(mp.GetProjectedPoint(transform.position));
+            //Debug.Log(mp.GetProjectedPoint(transform.position));
         }
     }
 

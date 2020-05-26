@@ -112,7 +112,6 @@ namespace DHUI.Core
         {
             UpdateCurrentCommand();
             UpdateInfo();
-            
         }
 
         private void UpdateInfo()
@@ -289,7 +288,8 @@ namespace DHUI.Core
         /// Updates the command we are currently processing.
         /// If it is null or finished, we continue to the next one.
         /// </summary>
-        private void UpdateCurrentCommand() {
+        private void UpdateCurrentCommand()
+        {
             if (currentProcessedCommand == null)
             {
                 ProcessNext();

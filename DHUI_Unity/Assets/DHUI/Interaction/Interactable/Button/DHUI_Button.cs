@@ -14,23 +14,35 @@ namespace DHUI
         #region Inspector Setup
         [Header("Button.Setup")]
         [SerializeField]
-        private Transform m_buttonPressValue_point1;
+        protected Transform m_centerPoint_StaticPart = null;
         [SerializeField]
-        private Transform m_buttonPressValue_point2;
+        protected Transform m_centerPoint_MovingPart = null;
+        [SerializeField]
+        protected Transform m_buttonPressValue_point1;
+        [SerializeField]
+        protected Transform m_buttonPressValue_point2;
+        [SerializeField]
+        protected Transform m_droneTargetPoint = null;
 
         [Header("Button.GeneralSettings")]
         [SerializeField]
-        private float _hover_touchThreshold = 0.1f;
+        protected float _hover_touchThreshold = 0.1f;
         [SerializeField]
-        private GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Local;
+        protected GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Local;
         [SerializeField]
-        private float _activationDistance_threshold = 0.15f;
+        protected float _activationDistance_threshold = 0.15f;
         [SerializeField]
-        private float _activationCooldown = 0.5f;
+        protected float _activationCooldown = 0.5f;
 
         [Header("Button.DroneSettings")]
         [SerializeField]
-        private float _droneSpeed_initialPositioning = 1f;
+        protected float _droneSpeed_initialPositioning = 2f;
+        [SerializeField]
+        protected float _droneSpeed_hovering = 0.5f;
+        [SerializeField][Range(0,2)]
+        protected float _droneResistance = 1f;
+        [SerializeField]
+        protected bool _lockDroneXYWhilePressed = false;
 
         #endregion Inspector Setup
 
@@ -138,21 +150,46 @@ namespace DHUI
         #endregion States
 
         #region Protected
-        /// <summary>
-        /// Current Distance between the Button ('ContactPlane') and Hand ('_hoverEvent.InteractorPosition').
-        /// </summary>
-        protected float hover_distance = 0f;
-
-        /// <summary>
-        /// Projected Point of the Hand ('_hoverEvent.InteractorPosition') on the Button ('ContactPlane')
-        /// </summary>
-        protected Vector3 hover_projectedPoint = Vector3.zero;
-
+        
         /// <summary>
         /// Current Distance between 'm_buttonPressValue_point1' and 'm_buttonPressValue_point2'. This represents the current value of the button press.
         /// </summary>
         protected float currentActivationDistance = 0f;
 
+        /// <summary>
+        /// Contact plane of the static part of the button.
+        /// </summary>
+        protected Utils.MathPlane ContactPlane_StaticPart
+        {
+            get { return new Utils.MathPlane(m_centerPoint_StaticPart); }
+        }
+        /// <summary>
+        /// Contact plane of the moving Part of the button.
+        /// </summary>
+        protected Utils.MathPlane ContactPlane_MovingPart
+        {
+            get { return new Utils.MathPlane(m_centerPoint_MovingPart); }
+        }
+        /// <summary>
+        /// Current Distance between the Button ('ContactPlane') and Hand ('_hoverEvent.InteractorPosition').
+        /// </summary>
+        protected float hover_distance_staticPart = 0f;
+
+        /// <summary>
+        /// Current Distance between the Button's MovingPart ('ContactPlane_MovingPart') and Hand ('_hoverEvent.InteractorPosition').
+        /// </summary>
+        protected float hover_distance_movingPart = 0f;
+
+        /// <summary>
+        /// Projected Point of the Hand ('_hoverEvent.InteractorPosition') on the Button ('ContactPlane')
+        /// </summary>
+        protected Vector3 hover_projectedPoint_staticPart = Vector3.zero;
+        
+        /// <summary>
+        /// Projected Point of the Hand ('_hoverEvent.InteractorPosition') on the Button's Moving Part ('ContactPlane_MovingPart')
+        /// </summary>
+        protected Vector3 hover_projectedPoint_movingPart = Vector3.zero;
+        
         #endregion Protected
 
         #region Private
@@ -166,6 +203,11 @@ namespace DHUI
         /// </summary>
         private float currentActivationDuration = 0f;
 
+        /// <summary>
+        /// Saved last Position of the Interactor. Used when drone's XY should get locked while button is pressed.
+        /// </summary>
+        private Vector3 lastInteractorPos = Vector3.zero;
+
         #endregion Private
 
         #endregion Fields
@@ -177,27 +219,47 @@ namespace DHUI
         public override void Hover_Start(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_Start(_hoverEvent);
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_contactCenterPoint.position, m_contactCenterPoint.rotation, _droneSpeed_initialPositioning);
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint_StaticPart.position, m_centerPoint_StaticPart.rotation, _droneSpeed_initialPositioning);
             m_flightController.AddToFrontOfQueue(cmd, true, true);
         }
 
         public override void Hover_End(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_End(_hoverEvent);
-
             ButtonInternalState = ButtonInternalStates.Inactive;
         }
 
         public override void Hover_Stay(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_Stay(_hoverEvent);
+            
+            UpdateHoverCalculations(_hoverEvent);
+            UpdateActivationCalculations(_hoverEvent);
+            UpdateState(_hoverEvent);
+            
+            UpdateDroneTargetPoint();
+            UpdateFlightController();
+        }
 
-            // Calculating Hover Information
+        protected virtual void UpdateHoverCalculations(DHUI_HoverEventArgs _hoverEvent)
+        {
             Vector3 interactorPos = _hoverEvent.InteractorPosition;
-            hover_distance = Mathf.Abs(ContactPlane.GetDistance(interactorPos));
-            hover_projectedPoint = ContactPlane.GetProjectedPoint(interactorPos);
 
-            // Calculating Activation Information
+            if (_lockDroneXYWhilePressed && (ButtonInternalState == ButtonInternalStates.Pressed || ButtonInternalState == ButtonInternalStates.Activated))
+            {
+                interactorPos = lastInteractorPos;
+            }
+
+            hover_distance_staticPart = Mathf.Abs(ContactPlane_StaticPart.GetDistance(interactorPos));
+            hover_projectedPoint_staticPart = ContactPlane_StaticPart.GetProjectedPoint(interactorPos);
+            hover_distance_movingPart = Mathf.Abs(ContactPlane_MovingPart.GetDistance(interactorPos));
+            hover_projectedPoint_movingPart = ContactPlane_MovingPart.GetProjectedPoint(interactorPos);
+
+            lastInteractorPos = interactorPos;
+        }
+
+        protected virtual void UpdateActivationCalculations(DHUI_HoverEventArgs _hoverEvent)
+        {
             if (_activationDistance_mode == GlobalLocalMode.Global)
             {
                 currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.position, m_buttonPressValue_point2.position);
@@ -206,11 +268,13 @@ namespace DHUI
             {
                 currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.localPosition, m_buttonPressValue_point2.localPosition);
             }
-            
-            //Switching States
-            if (ContactPlane.PointInFrontOfPlane(interactorPos))
+        }
+
+        protected virtual void UpdateState(DHUI_HoverEventArgs _hoverEvent)
+        {
+            if (ContactPlane_StaticPart.PointInFrontOfPlane(_hoverEvent.InteractorPosition))
             {
-                if (hover_distance < _hover_touchThreshold)
+                if (hover_distance_staticPart < _hover_touchThreshold)
                 {
                     ButtonInternalState = ButtonInternalStates.Touched;
                 }
@@ -229,8 +293,29 @@ namespace DHUI
                 {
                     ButtonInternalState = ButtonInternalStates.Pressed;
                 }
-
             }
+        }
+
+        protected virtual void UpdateDroneTargetPoint()
+        {
+            Vector3 calculatedPos = hover_projectedPoint_movingPart + (hover_projectedPoint_staticPart - hover_projectedPoint_movingPart) * _droneResistance;
+
+            float minX = CenterPoint.x - transform.localScale.x * 0.5f;
+            float maxX = CenterPoint.x + transform.localScale.x * 0.5f;
+            float minY = CenterPoint.y - transform.localScale.y * 0.5f;
+            float maxY = CenterPoint.y + transform.localScale.y * 0.5f;
+            if (calculatedPos.x < minX) calculatedPos.x = minX;
+            if (calculatedPos.x > maxX) calculatedPos.x = maxX;
+            if (calculatedPos.y < minY) calculatedPos.y = minY;
+            if (calculatedPos.y > maxY) calculatedPos.y = maxY;
+
+            m_droneTargetPoint.transform.position = calculatedPos;
+        }
+
+        protected virtual void UpdateFlightController()
+        {
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _droneSpeed_hovering);
+            m_flightController.AddToFrontOfQueue(cmd, true, true);
         }
 
         #endregion
@@ -269,6 +354,7 @@ namespace DHUI
         }
 
         #endregion Activation
+
 
         protected void Update()
         {

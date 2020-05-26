@@ -70,6 +70,7 @@ namespace DHUI.Core
         {
             targetPosition = _targetPosition;
             targetRotation = _targetRotation;
+            
             speed = _speed;
         }
 
@@ -92,7 +93,14 @@ namespace DHUI.Core
 
             if (!manualTimeSet)
             {
-                time = Vector3.Distance(startPosition, targetPosition) / speed;
+                if (speed <= 0)
+                {
+                    time = 0;
+                }
+                else
+                {
+                    time = Vector3.Distance(startPosition, targetPosition) / speed;
+                }
             }
         }
 

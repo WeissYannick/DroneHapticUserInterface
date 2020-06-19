@@ -20,6 +20,8 @@ namespace DHUI
         [Header("Settings")]
         [SerializeField]
         private float _maxReachableDistance = 1;
+        [SerializeField]
+        private float _bodyDangerRadius = 0.3f;
 
         public enum ActiveHandState {
             None, Left, Right, Both
@@ -55,6 +57,8 @@ namespace DHUI
                 }
             }
         }
+        
+        public static string InteractorTag = "DHUI_Interactor";
 
         #endregion Fields
 
@@ -146,7 +150,7 @@ namespace DHUI
         #region Interactables.Updating
 
         private void UpdateInteractables() {
-
+            
             CheckClosestInteractable();
             UpdateCurrentActiveInteractable();
         }
@@ -154,16 +158,25 @@ namespace DHUI
         private void CheckClosestInteractable()
         {
             float closestDistance = float.MaxValue;
+            Vector2 bodyCenter2D = new Vector2(m_head.position.x, m_head.position.z);
+
             DHUI_Interactable closestInteractable = null;
             foreach (DHUI_Interactable interactable in registeredInteractables)
             {
+                // Skip Disabled and Inactive Interactables
                 if (!interactable.isActiveAndEnabled || interactable.IsDisabled)
                 {
                     continue;
                 }
+                // Skip Interactables to close to the user's body.
+                Vector2 interactableCenter2D = new Vector2(interactable.CenterPoint.x, interactable.CenterPoint.z);
+                if (Vector2.Distance(bodyCenter2D, interactableCenter2D) <= _bodyDangerRadius && interactable != ActiveInteractable)
+                {
+                    continue;
+                }
 
+                // Get closest Interactable to the InteractionPoint
                 float distance = Vector3.Distance(m_interactionPoint.position, interactable.CenterPoint);
-
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -200,5 +213,6 @@ namespace DHUI
         }
 
         #endregion HoverEvent
+        
     }
 }

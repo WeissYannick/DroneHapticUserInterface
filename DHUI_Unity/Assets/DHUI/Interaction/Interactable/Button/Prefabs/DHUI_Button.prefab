@@ -86,7 +86,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4386071700401529531}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.14100005}
+  m_LocalPosition: {x: 0, y: 0, z: 0.141}
   m_LocalScale: {x: 1, y: 1, z: 0.29999998}
   m_Children:
   - {fileID: 4386071700314786426}
@@ -106,7 +106,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 0.4772771}
-  m_Center: {x: 0, y: 0, z: -0.2613615}
+  m_Center: {x: 0, y: 0, z: 0.2613615}
 --- !u!54 &4386071700401529529
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -188,13 +188,37 @@ MonoBehaviour:
   _lockDroneXYWhilePressed: 1
   OnActivationStart:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4386071700883844745}
+        m_MethodName: set_material
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 2100000, guid: 67b66d4eb50ed684d94eb00bc04709d2,
+            type: 2}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Material, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   OnActivationStay:
     m_PersistentCalls:
       m_Calls: []
   OnActivationEnd:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4386071700883844745}
+        m_MethodName: set_material
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 2100000, guid: 113742fcb5ec3254e96c40315b70f248,
+            type: 2}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Material, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4386071700883844742
 GameObject:
   m_ObjectHideFlags: 0
@@ -289,7 +313,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 21.56631}
-  m_Center: {x: 0, y: 0, z: 10.2831545}
+  m_Center: {x: 0, y: 0, z: -10.28315}
 --- !u!54 &4386071700883844747
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -304,7 +328,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 118
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!145 &4386071700883844740
 SpringJoint:
@@ -314,9 +338,9 @@ SpringJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4386071700883844742}
   m_ConnectedBody: {fileID: 0}
-  m_Anchor: {x: 0, y: 0.5000005, z: 0}
-  m_AutoConfigureConnectedAnchor: 0
-  m_ConnectedAnchor: {x: 0, y: 0, z: 0}
+  m_Anchor: {x: 0, y: 0, z: 0}
+  m_AutoConfigureConnectedAnchor: 1
+  m_ConnectedAnchor: {x: -0.7931311, y: 1.5500337, z: 0.34016237}
   serializedVersion: 2
   m_Spring: 100
   m_Damper: 1
@@ -353,7 +377,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4386071701150564567}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.4700001}
+  m_LocalPosition: {x: 0, y: 0, z: 0.4700001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4386071700883844741}
@@ -383,7 +407,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4386071701326311326}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.4700002}
+  m_LocalPosition: {x: 0, y: 0, z: 0.4700002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4386071700883844741}

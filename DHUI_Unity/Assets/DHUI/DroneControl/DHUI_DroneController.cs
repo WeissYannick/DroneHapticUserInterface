@@ -30,16 +30,41 @@ namespace DHUI.Core
         [SerializeField] [Tooltip("The script handling the calculations of the PID-values for Throttle, Roll, Pitch and Yaw based on the drone's and target's transforms.")]
         private DHUI_PIDCalculation _PIDCalculator = null;
 
-        [SerializeField] [Tooltip("The script handling the output of the values to the serial.")]
-        private DHUI_SerialOutput _serialOutput = null;
+        [SerializeField] [Tooltip("The script handling the output of the values to control the drone.")]
+        private DHUI_Output _output = null;
 
         [SerializeField] [Tooltip("The script handling the emergency inputs (e.g. Emergency Hover, Emergency Land, Emergency ShutOff). This is required as a safety precaution.")]
         private DHUI_EmergencyInput_Base _emergencyInputs = null;
+        
+        [SerializeField][Tooltip("Transform of the center point of the drone.")]
+        private Transform _dronePoint_center = null;
 
-        [SerializeField] [Tooltip("Transform of the center point of the contact face.")]
-        private Transform _contactPoint = null;
+        [SerializeField][Tooltip("Transform of the center point of the front face of the drone.")]
+        private Transform _dronePoint_frontFace = null;
 
+        [SerializeField][Tooltip("Transform of the center point of the back face of the drone.")]
+        private Transform _dronePoint_backFace = null;
+
+        [SerializeField][Tooltip("Transform of the center point of the left face of the drone.")]
+        private Transform _dronePoint_leftFace = null;
+
+        [SerializeField][Tooltip("Transform of the center point of the right face of the drone.")]
+        private Transform _dronePoint_rightFace = null;
         #endregion Fields | Setup
+
+        #region Fields | Public Settings
+        [Header("Public Settings")]
+        /// <summary>
+        /// The currently selected face of the drone as active face. This will determine the contactPointOffset and theresfore which face will be positioned on the target.
+        /// For regular use (without direct touch interaction), "Center"-mode is recommended, resulting in the drone's center to be positioned at the target location.
+        /// For use with direct touch interaction, on of the faces other than "Center" should be selected, to require the drone to position this face on the target location, rather than its center. 
+        /// </summary>
+        [Tooltip("The currently selected face of the drone as active face. This will determine the contactPointOffset and theresfore which face will be positioned on the target." 
+        + "For regular use (without direct touch interaction), 'Center'-mode is recommended, resulting in the drone's center to be positioned at the target location." 
+        + "For use with direct touch interaction, on of the faces other than 'Center' should be selected, to require the drone to position this face on the target location, rather than its center.")]
+        public DroneActiveFaceOptions currentActiveFace = DroneActiveFaceOptions.Center;
+
+        #endregion Fields | Settings
 
         #region Fields | Calibration
         [Header("Calibration")]
@@ -79,7 +104,7 @@ namespace DHUI.Core
         [Tooltip("The targeted distance in Centimeters above the floor, where we want to initiate the shut off of the drone.")]
         public float _th_RegularLanding_ShutOff_TargetCmFromFloor = 2f;
         #endregion Fields | Thresholds | Trigger Distances for Regular Landings
-
+        
         #endregion Fields | Thresholds
 
         #region Fields | Info
@@ -141,15 +166,133 @@ namespace DHUI.Core
         /// The default/idle values of the channels.
         /// </summary>
         private readonly int[] defaultValues = { 1000, 1500, 1500, 1500, 1000, 1000, 1000, 1000 };
+        
+        /// <summary>
+        /// The offset of the drone's center (position of '_virtualDrone') to the actual contact plane/point (position of the center point of the currently active Face).
+        /// </summary>
+        public Vector3 contactPointPositionOffset
+        {
+            get
+            {
+                Transform contactPoint = null;
+                switch (currentActiveFace)
+                {
+                    case DroneActiveFaceOptions.Center:
+                        contactPoint = _dronePoint_center;
+                        break;
+                    case DroneActiveFaceOptions.Front:
+                        contactPoint = _dronePoint_frontFace;
+                        break;
+                    case DroneActiveFaceOptions.Back:
+                        contactPoint = _dronePoint_backFace;
+                        break;
+                    case DroneActiveFaceOptions.Left:
+                        contactPoint = _dronePoint_leftFace;
+                        break;
+                    case DroneActiveFaceOptions.Right:
+                        contactPoint = _dronePoint_rightFace;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (contactPoint == null || _virtualDrone == null) return Vector3.zero;
+
+                return _virtualDrone.transform.TransformVector(_virtualDrone.transform.InverseTransformPoint(contactPoint.transform.position) - _virtualDrone.transform.InverseTransformPoint(_virtualDrone.transform.position));
+            }
+        }
+        /// <summary>
+        /// The rotation offset of the drone's center (rotation of '_virtualDrone') to the actual contact plane/point (rotation of the center point of the currently active Face).
+        /// </summary>
+        public Vector3 contactPointRotationOffset
+        {
+            get
+            {
+                Transform contactPoint = null;
+                switch (currentActiveFace)
+                {
+                    case DroneActiveFaceOptions.Center:
+                        contactPoint = _dronePoint_center;
+                        break;
+                    case DroneActiveFaceOptions.Front:
+                        contactPoint = _dronePoint_frontFace;
+                        break;
+                    case DroneActiveFaceOptions.Back:
+                        contactPoint = _dronePoint_backFace;
+                        break;
+                    case DroneActiveFaceOptions.Left:
+                        contactPoint = _dronePoint_leftFace;
+                        break;
+                    case DroneActiveFaceOptions.Right:
+                        contactPoint = _dronePoint_rightFace;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (contactPoint == null || _virtualDrone == null) return Vector3.zero;
+
+                return _virtualDrone.transform.TransformDirection(_virtualDrone.transform.InverseTransformDirection(contactPoint.transform.forward) - _virtualDrone.transform.InverseTransformDirection(_virtualDrone.transform.forward));
+            }
+        }
+
+        public Transform contactPointTransform
+        {
+            get
+            {
+                Transform contactPoint = null;
+                switch (currentActiveFace)
+                {
+                    case DroneActiveFaceOptions.Center:
+                        contactPoint = _dronePoint_center;
+                        break;
+                    case DroneActiveFaceOptions.Front:
+                        contactPoint = _dronePoint_frontFace;
+                        break;
+                    case DroneActiveFaceOptions.Back:
+                        contactPoint = _dronePoint_backFace;
+                        break;
+                    case DroneActiveFaceOptions.Left:
+                        contactPoint = _dronePoint_leftFace;
+                        break;
+                    case DroneActiveFaceOptions.Right:
+                        contactPoint = _dronePoint_rightFace;
+                        break;
+                    default:
+                        break;
+                }
+                return contactPoint;
+            }
+        }
 
         /// <summary>
-        /// The offset of the drone's center (position of '_virtualDrone') to the actual contact plane/point (position of '_contactPoint').
+        /// Wether "Roll" Output Value is manually being overridden from outside.
         /// </summary>
-        public Vector3 contactPointOffset
-        {
-            private set;
-            get;
-        } = Vector3.zero;
+        private bool overridingRoll = false;
+
+        /// <summary>
+        /// Value used to override "Roll" Output.
+        /// </summary>
+        private int overridingRollValue = 1500;
+
+        /// <summary>
+        /// Wether "Pitch" Output Value is manually being overridden from outside.
+        /// </summary>
+        private bool overridingPitch = false;
+
+        /// <summary>
+        /// Value used to override "Pitch" Output.
+        /// </summary>
+        private int overridingPitchValue = 1500;
+        /// <summary>
+        /// Wether "Yaw" Output Value is manually being overridden from outside.
+        /// </summary>
+        private bool overridingYaw = false;
+
+        /// <summary>
+        /// Value used to override "Yaw" Output.
+        /// </summary>
+        private int overridingYawValue = 1500;
 
         #endregion Fields | Private
 
@@ -164,9 +307,14 @@ namespace DHUI.Core
         public enum DroneState { Off, Follow, Hover, Land }
 
         /// <summary>
-        /// 
+        /// Possible Options for the Active Face of the drone. The Active Face will be the face that will be adjusted to ft the target point.
+        /// In practice this will determine which face of the drone will be facing towards the user. 
+        /// This is seperate from the target points rotation, meaning we can achieve the drone rotating around one of its faces and not just its center.
+        /// e.g. Option "Center" means, the drone will position its center point on the target point.
+        /// e.g. Option "Front" means, the drone will position the center point of the front face on the target point.
+        /// e.g. Option "Left" means, the drone will posisition the center point of the left face of the drone on the target point.
         /// </summary>
-        public enum DroneActivePoint { Center, Front, Back, Left, Right }
+        public enum DroneActiveFaceOptions { Center, Front, Back, Left, Right }
         #endregion Enums
 
         #region Methods | Public
@@ -270,6 +418,74 @@ namespace DHUI.Core
             }
             return save;
         }
+
+        /// <summary>
+        /// Sets the current active face of the drone. 
+        /// </summary>
+        /// <param name="_newActiveFace">The chosen mode/option for the active face.</param>
+        public void SetCurrentActiveFace(DroneActiveFaceOptions _newActiveFace)
+        {
+            currentActiveFace = _newActiveFace;
+        }
+
+        /// <summary>
+        /// Do NOT use this, unless you know what you are doing.
+        /// Starts the Override of the "Roll" Output value with the given value. 
+        /// Needs to be Ended by EndOverrideRoll() for the override to stop.
+        /// </summary>
+        /// <param name="_val">Value overriding the "Roll" Output value.</param>
+        public void Advanced_StartOverrideRoll(int _val)
+        {
+            overridingRollValue = _val;
+            overridingRoll = true;
+        }
+
+        /// <summary>
+        /// Ends the manual override of the "Roll" Output value.
+        /// </summary>
+        public void Advanced_EndOverrideRoll()
+        {
+            overridingRoll = false;
+        }
+        /// <summary>
+        /// Do NOT use this, unless you know what you are doing.
+        /// Starts the Override of the "Pitch" Output value with the given value. 
+        /// Needs to be Ended by EndOverridePitch() for the override to stop.
+        /// </summary>
+        /// <param name="_val">Value overriding the "Pitch" Output value.</param>
+        public void Advanced_StartOverridePitch(int _val)
+        {
+            overridingPitchValue = _val;
+            overridingPitch = true;
+        }
+
+        /// <summary>
+        /// Ends the manual override of the "Pitch" Output value.
+        /// </summary>
+        public void Advanced_EndOverridePitch()
+        {
+            overridingPitch = false;
+        }
+        /// <summary>
+        /// Do NOT use this, unless you know what you are doing.
+        /// Starts the Override of the "Yaw" Output value with the given value. 
+        /// Needs to be Ended by EndOverrideYaw() for the override to stop.
+        /// </summary>
+        /// <param name="_val">Value overriding the "Yaw" Output value.</param>
+        public void Advanced_StartOverrideYaw(int _val)
+        {
+            overridingYawValue = _val;
+            overridingYaw = true;
+        }
+
+        /// <summary>
+        /// Ends the manual override of the "Yaw" Output value.
+        /// </summary>
+        public void Advanced_EndOverrideYaw()
+        {
+            overridingYaw = false;
+        }
+        
         #endregion Methods | Public
 
         #region Methods | Start/Update
@@ -296,11 +512,6 @@ namespace DHUI.Core
                 _virtualDrone = transform;
                 Debug.Log("<b>DHUI</b> | DroneController | No Transform for VirtualDrone was set in Inspector -> Defaulting to this transform. (\"" + gameObject.name + "\")");
             }
-            if (_contactPoint == null)
-            {
-                _contactPoint = _virtualDrone.transform;
-            }
-            contactPointOffset = _contactPoint.transform.position - _virtualDrone.transform.position;
             if (_droneTracker == null)
             {
                 _droneTracker = FindObjectOfType<DHUI_DroneTracking_Base>();
@@ -325,16 +536,16 @@ namespace DHUI.Core
                     Debug.LogError("<b>DHUI</b> | DroneController | No DHUI_PIDCalculation was set in Inspector and none was found in the scene.");
                 }
             }
-            if (_serialOutput == null)
+            if (_output == null)
             {
-                _serialOutput = FindObjectOfType<DHUI_SerialOutput>();
-                if (_serialOutput != null)
+                _output = FindObjectOfType<DHUI_Output>();
+                if (_output != null)
                 {
-                    Debug.Log("<b>DHUI</b> | DroneController | No DHUI_SerialOutput was set in Inspector -> Found one in the scene on \"" + _serialOutput.gameObject.name + "\".");
+                    Debug.Log("<b>DHUI</b> | DroneController | No DHUI_Output was set in Inspector -> Found one in the scene on \"" + _output.gameObject.name + "\".");
                 }
                 else
                 {
-                    Debug.LogError("<b>DHUI</b> | DroneController | No DHUI_SerialOutput was set in Inspector and none was found in the scene.");
+                    Debug.LogError("<b>DHUI</b> | DroneController | No DHUI_Output was set in Inspector and none was found in the scene.");
                 }
             }
             if (_emergencyInputs == null)
@@ -352,7 +563,7 @@ namespace DHUI.Core
             _emergencyInputs.Setup(this);
             
 
-            if (_target != null && _droneTracker != null && _serialOutput != null && _PIDCalculator != null && _emergencyInputs != null)
+            if (_target != null && _droneTracker != null && _output != null && _PIDCalculator != null && _emergencyInputs != null)
             {
                 setupCorrect = true;
             }
@@ -465,7 +676,7 @@ namespace DHUI.Core
         /// </summary>
         private void WriteOutput()
         {
-            _serialOutput.SetValues(values);
+            _output.SetValues(values);
         }
         #endregion Methods | Output
 
@@ -478,9 +689,9 @@ namespace DHUI.Core
             UpdatePID(true, true);
 
             values[0] = _PIDCalculator.GetThrottle();
-            values[1] = _PIDCalculator.GetRoll();
-            values[2] = _PIDCalculator.GetPitch();
-            values[3] = _PIDCalculator.GetYaw();
+            values[1] = overridingRoll? overridingRollValue : _PIDCalculator.GetRoll();
+            values[2] = overridingPitch? overridingPitchValue : _PIDCalculator.GetPitch();
+            values[3] = overridingYaw? overridingYawValue : _PIDCalculator.GetYaw();
         }
 
         /// <summary>
@@ -541,8 +752,9 @@ namespace DHUI.Core
             {
                 if (followTarget)
                 {
-                    Vector3 targetPos = _target.position - contactPointOffset;
-                    _PIDCalculator.UpdateTrajectory(_droneTracker.dronePosition, _droneTracker.droneForward, _droneTracker.droneVelocity, targetPos, _target.forward, _droneTracker.droneDistanceToTarget(targetPos));
+                    Vector3 targetPos = _target.position - contactPointPositionOffset;
+                    Vector3 targetForward = _target.forward - contactPointRotationOffset;
+                    _PIDCalculator.UpdateTrajectory(_droneTracker.dronePosition, _droneTracker.droneForward, _droneTracker.droneVelocity, targetPos, targetForward, _droneTracker.droneDistanceToTarget(targetPos));
                 }
                 else
                 {

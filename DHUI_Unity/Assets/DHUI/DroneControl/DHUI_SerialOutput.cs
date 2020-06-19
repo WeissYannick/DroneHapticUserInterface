@@ -15,7 +15,7 @@ namespace DHUI.Core
     /// This class handles the output of the values to serial. 
     /// It establishes a conncection to the serial-port, transforms the integer-values to a specific string-format and sends them to the serial at around 66Hz.
     /// </summary>
-    public class DHUI_SerialOutput : MonoBehaviour
+    public class DHUI_SerialOutput : DHUI_Output
     {
         [SerializeField][Tooltip("Name of the Serial-Port.")]
         private string serialPortName = "COM6";
@@ -28,22 +28,7 @@ namespace DHUI.Core
 
         // Thread handling the output to serial. (66Hz)
         private Thread serialOutputThread;
-
-        // The Values we send to the serial.
-        private int[] currentOutputValues = { 1000, 1500, 1500, 1500, 1000, 1000, 1000, 1000 };
-
-        #region Public Methods
-        /// <summary>
-        /// Sets the values that should be written to serial.
-        /// </summary>
-        /// <param name="values">Output values</param>
-        public void SetValues(int[] values)
-        {
-            currentOutputValues = values;
-        }
-
-        #endregion Public Methods
-
+        
         #region Start/End
 
         /// <summary>

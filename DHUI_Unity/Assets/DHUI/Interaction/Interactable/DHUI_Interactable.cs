@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DHUI.Core;
+using System;
+using UnityEngine.Events;
 
 namespace DHUI
 {
@@ -14,9 +16,18 @@ namespace DHUI
         protected DHUI_FlightController m_flightController = null;
         [SerializeField]
         protected Transform m_centerPoint = null;
+        
+        [Header("Interactable.Events")]
+        public DHUI_InteractableHoverEvent OnHoverStart = null;
+        public DHUI_InteractableHoverEvent OnHoverStay = null;
+        public DHUI_InteractableHoverEvent OnHoverEnd = null;
+
         [Header("Interactable.Advanced")]
         [SerializeField]
         protected bool _manualRegistering = false;
+        
+        [Serializable]
+        public class DHUI_InteractableHoverEvent : UnityEvent<DHUI_HoverEventArgs> { }
         
         public Vector3 CenterPoint
         {
@@ -82,17 +93,19 @@ namespace DHUI
 
         public virtual void Hover_Start(DHUI_HoverEventArgs _hoverEvent)
         {
-            
+            OnHoverStart?.Invoke(_hoverEvent);
         }
 
         public virtual void Hover_Stay(DHUI_HoverEventArgs _hoverEvent)
         {
-            
+
+            OnHoverStay?.Invoke(_hoverEvent);
         }
 
         public virtual void Hover_End(DHUI_HoverEventArgs _hoverEvent)
         {
-            
+
+            OnHoverEnd?.Invoke(_hoverEvent);
         }
     }
 

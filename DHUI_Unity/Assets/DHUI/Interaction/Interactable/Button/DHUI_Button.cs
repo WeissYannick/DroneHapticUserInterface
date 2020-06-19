@@ -354,8 +354,7 @@ namespace DHUI
         }
 
         #endregion Activation
-
-
+        
         protected void Update()
         {
             UpdateActivation();

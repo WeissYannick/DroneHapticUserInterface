@@ -49,7 +49,7 @@ namespace DHUI.Utils
 
         public bool PointInFrontOfPlane(Vector3 _p)
         {
-            return GetDistance(_p) < 0;
+            return GetDistance(_p) > 0;
         }
 
 

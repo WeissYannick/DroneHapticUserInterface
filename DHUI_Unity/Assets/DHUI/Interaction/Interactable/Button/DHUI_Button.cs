@@ -36,9 +36,7 @@ namespace DHUI
 
         [Header("Button.DroneSettings")]
         [SerializeField]
-        protected float _droneSpeed_initialPositioning = 2f;
-        [SerializeField]
-        protected float _droneSpeed_hovering = 2f;
+        protected float _droneSpeed = 2f;
         [SerializeField][Range(0,2)]
         protected float _droneResistance = 1f;
         [SerializeField]
@@ -219,7 +217,7 @@ namespace DHUI
         public override void Hover_Start(DHUI_HoverEventArgs _hoverEvent)
         {
             base.Hover_Start(_hoverEvent);
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint_StaticPart.position, m_centerPoint_StaticPart.rotation, _droneSpeed_initialPositioning);
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint_StaticPart.position, m_centerPoint_StaticPart.rotation, _droneSpeed);
             m_flightController.AddToFrontOfQueue(cmd, true, true);
         }
 
@@ -314,7 +312,7 @@ namespace DHUI
 
         protected virtual void UpdateFlightController()
         {
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _droneSpeed_hovering);
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _droneSpeed);
             m_flightController.AddToFrontOfQueue(cmd, true, true);
         }
 

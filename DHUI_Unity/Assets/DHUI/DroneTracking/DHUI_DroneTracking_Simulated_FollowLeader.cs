@@ -46,7 +46,7 @@ namespace DHUI
             {
                 case DHUI_DroneController.DroneState.Follow:
                     trackedTransform.position = Vector3.Lerp(trackedTransform.position, _leaderToFollow.position - _droneController.contactPointPositionOffset, _followSpeed);
-                    trackedTransform.forward = Vector3.Lerp(trackedTransform.forward, _leaderToFollow.forward - _droneController.contactPointRotationOffset, _followSpeed);
+                    trackedTransform.forward = Vector3.Lerp(trackedTransform.forward, Quaternion.Euler(0, -_droneController.contactPointRotationOffset, 0) * _leaderToFollow.forward, _followSpeed);
                     velocity = Vector3.zero;
                     break;
                 case DHUI_DroneController.DroneState.Land:

@@ -202,9 +202,9 @@ namespace DHUI.Core
             }
         }
         /// <summary>
-        /// The rotation offset of the drone's center (rotation of '_virtualDrone') to the actual contact plane/point (rotation of the center point of the currently active Face).
+        /// The rotation offset (angle around Y-Axis) of the drone's center (rotation of '_virtualDrone') to the actual contact plane/point (rotation of the center point of the currently active Face).
         /// </summary>
-        public Vector3 contactPointRotationOffset
+        public float contactPointRotationOffset
         {
             get
             {
@@ -230,9 +230,9 @@ namespace DHUI.Core
                         break;
                 }
 
-                if (contactPoint == null || _virtualDrone == null) return Vector3.zero;
-
-                return _virtualDrone.transform.TransformDirection(_virtualDrone.transform.InverseTransformDirection(contactPoint.transform.forward) - _virtualDrone.transform.InverseTransformDirection(_virtualDrone.transform.forward));
+                if (contactPoint == null || _virtualDrone == null) return 0;
+                                
+                return contactPoint.eulerAngles.y - _virtualDrone.eulerAngles.y;
             }
         }
 
@@ -753,7 +753,7 @@ namespace DHUI.Core
                 if (followTarget)
                 {
                     Vector3 targetPos = _target.position - contactPointPositionOffset;
-                    Vector3 targetForward = _target.forward - contactPointRotationOffset;
+                    Vector3 targetForward = Quaternion.Euler(0, -contactPointRotationOffset, 0) * _target.forward;
                     _PIDCalculator.UpdateTrajectory(_droneTracker.dronePosition, _droneTracker.droneForward, _droneTracker.droneVelocity, targetPos, targetForward, _droneTracker.droneDistanceToTarget(targetPos));
                 }
                 else

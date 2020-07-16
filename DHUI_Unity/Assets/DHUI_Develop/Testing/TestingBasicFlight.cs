@@ -13,7 +13,7 @@ public class TestingBasicFlight : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(transform.position, transform.rotation);
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(transform.position, transform.rotation, 0.2f);
             controller.AddToBackOfQueue(cmd);
         }
         if (Input.GetKeyDown(KeyCode.RightArrow))

@@ -26,6 +26,8 @@ namespace DHUI
 
         [Header("Button.GeneralSettings")]
         [SerializeField]
+        protected bool _hover_setDroneTargetToHoverPoint = false;
+        [SerializeField]
         protected float _hover_touchThreshold = 0.1f;
         [SerializeField]
         protected GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Global;
@@ -296,6 +298,7 @@ namespace DHUI
 
         protected virtual void UpdateDroneTargetPoint()
         {
+            if (!_hover_setDroneTargetToHoverPoint) return;
             Vector3 calculatedPos = hover_projectedPoint_movingPart + (hover_projectedPoint_staticPart - hover_projectedPoint_movingPart) * _droneResistance;
 
             float minX = CenterPoint.x - transform.localScale.x * 0.5f;

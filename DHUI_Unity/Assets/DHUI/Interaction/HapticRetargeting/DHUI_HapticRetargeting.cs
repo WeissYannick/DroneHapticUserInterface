@@ -36,7 +36,7 @@ namespace DHUI
 
             if (retargetingOn)
             {
-                Vector3 currentPhysicalVector = physicalTarget.localPosition - physicalHand.localPosition;
+                Vector3 currentPhysicalVector = transform.InverseTransformPoint(physicalTarget.position) - transform.InverseTransformPoint(physicalHand.position);
 
                 float step = 0;
                 if (onlyUseZForStep)
@@ -54,14 +54,14 @@ namespace DHUI
                 }
                 else
                 {
-                    virtualHand.localPosition = physicalHand.localPosition + Vector3.Lerp(Vector3.zero, virtualTarget.localPosition - physicalTarget.localPosition, retargetingCurve.Evaluate(1 - step));
+                    virtualHand.position = transform.TransformPoint(transform.InverseTransformPoint(physicalHand.position) + Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(virtualTarget.position) - transform.InverseTransformPoint(physicalTarget.position), retargetingCurve.Evaluate(1 - step)));
                 }
             }
             else
             {
-                virtualHand.localPosition = physicalHand.localPosition;
+                virtualHand.position = physicalHand.position;
 
-                if (Vector3.Distance(physicalHand.localPosition, physicalTarget.localPosition) < activationDistance)
+                if (Vector3.Distance(transform.TransformPoint(physicalHand.position), transform.TransformPoint(physicalTarget.position)) < activationDistance)
                 {
                     StartRetargeting();
                 }
@@ -72,11 +72,10 @@ namespace DHUI
 
         public void StartRetargeting()
         {
-            startingPosition = physicalHand.localPosition;
-            physicalVector = physicalTarget.localPosition - startingPosition;
-            virtualVector = virtualTarget.localPosition - startingPosition;
+            startingPosition = transform.TransformPoint(physicalHand.position);
+            physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
+            virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
             retargetingOn = true;
-            
         }
 
     }

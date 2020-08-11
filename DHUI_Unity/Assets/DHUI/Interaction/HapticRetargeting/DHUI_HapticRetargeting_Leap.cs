@@ -25,16 +25,12 @@ public class DHUI_HapticRetargeting_Leap : PostProcessProvider
 
     public override void ProcessFrame(ref Frame inputFrame)
     {
-        // Calculate the position of the head and the basis to calculate shoulder position.
-        var headPos = Camera.main.transform.position;
-        var shoulderBasis = Quaternion.LookRotation(
-          Vector3.ProjectOnPlane(Camera.main.transform.forward, Vector3.up),
-          Vector3.up);
+        if (physicalTarget == null || virtualTarget == null) return;
 
         foreach (var hand in inputFrame.Hands)
         {
             Vector3 physicalHandPosition = transform.InverseTransformPoint(hand.PalmPosition.ToVector3());
-            Vector3 newPosition = transform.TransformPoint(physicalHandPosition); ;
+            Vector3 newPosition = transform.TransformPoint(physicalHandPosition);
 
             if (retargetingOn)
             {

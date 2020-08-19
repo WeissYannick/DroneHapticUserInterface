@@ -40,7 +40,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
     public override void Hover_Start(DHUI_HoverEventArgs _hand)
     {
         DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint.position, m_centerPoint.rotation);
-        m_flightController.AddToFrontOfQueue(cmd, true, true);
+        m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
 
         SetDebugText(0, buttonMode);
         SetDebugText(5, _activationDistance.ToString());
@@ -95,7 +95,7 @@ public class DHUI_Interactable_Testing : DHUI_Interactable
         SetDebugText(3, "X: " + ((x - CenterPoint.x)/ (transform.localScale.x/2)).ToString("F2") + "                   Y: " +  ((y - CenterPoint.y) / (transform.localScale.y / 2)).ToString("F2"));
 
         DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_hoverInformationObject.position, m_hoverInformationObject.rotation);
-        m_flightController.AddToFrontOfQueue(cmd, true, true);
+        m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
 
         if (m_hoverDistanceInformationObject != null)
         {

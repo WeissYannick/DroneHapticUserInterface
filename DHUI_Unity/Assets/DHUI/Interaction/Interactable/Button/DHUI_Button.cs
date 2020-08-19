@@ -44,6 +44,13 @@ namespace DHUI
         [SerializeField]
         protected bool _lockDroneXYWhilePressed = true;
 
+
+        [Header("Button.HapticRetargetingSettings")]
+        [SerializeField]
+        protected HapticRetargetingMode _hapticRetargetingMode = HapticRetargetingMode.NoRetargeting;
+        [SerializeField]
+        protected float _retargetingActivationDistance = 1;
+
         #endregion Inspector Setup
 
         #region Inspector Events
@@ -67,6 +74,11 @@ namespace DHUI
         public enum GlobalLocalMode
         {
             Global, Local
+        }
+
+        public enum HapticRetargetingMode
+        {
+            NoRetargeting, CenterToCenter
         }
 
         #endregion Enums
@@ -220,7 +232,9 @@ namespace DHUI
         {
             base.Hover_Start(_hoverEvent);
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint_StaticPart.position, m_centerPoint_StaticPart.rotation, _droneSpeed);
-            m_flightController.AddToFrontOfQueue(cmd, true, true);
+            m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
+            
+            UpdateHapticRetargeting(_hoverEvent);
         }
 
         public override void Hover_End(DHUI_HoverEventArgs _hoverEvent)
@@ -257,19 +271,7 @@ namespace DHUI
 
             lastInteractorPos = interactorPos;
         }
-
-        protected virtual void UpdateActivationCalculations(DHUI_HoverEventArgs _hoverEvent)
-        {
-            if (_activationDistance_mode == GlobalLocalMode.Global)
-            {
-                currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.position, m_buttonPressValue_point2.position);
-            }
-            else
-            {
-                currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.localPosition, m_buttonPressValue_point2.localPosition);
-            }
-        }
-
+        
         protected virtual void UpdateState(DHUI_HoverEventArgs _hoverEvent)
         {
             if (ContactPlane_StaticPart.PointInFrontOfPlane(_hoverEvent.InteractorPosition))
@@ -316,12 +318,52 @@ namespace DHUI
         protected virtual void UpdateFlightController()
         {
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _droneSpeed);
-            m_flightController.AddToFrontOfQueue(cmd, true, true);
+            m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
         }
 
         #endregion
 
+        #region HapticRetargeting
+        
+        protected virtual void UpdateHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
+        {
+            switch (_hapticRetargetingMode)
+            {
+                case HapticRetargetingMode.CenterToCenter:
+                    HapticRetargeting_CenterToCenter();
+                    break;
+                case HapticRetargetingMode.NoRetargeting:
+                default:
+                    HapticRetargeting_NoRetargeting();
+                    break;
+            }
+        }
+        protected virtual void HapticRetargeting_NoRetargeting()
+        {
+            m_interactionManager.HapticRetargeting?.DisableRetargeting();
+        }
+        protected virtual void HapticRetargeting_CenterToCenter()
+        {
+            m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
+            m_interactionManager.HapticRetargeting?.SetTargets(m_centerPoint_MovingPart, m_interactionManager.DroneController.contactPointTransform);
+            m_interactionManager.HapticRetargeting?.EnableRetargeting();
+        }
+
+        #endregion HapticRetargeting
+
         #region Activation
+        
+        protected virtual void UpdateActivationCalculations(DHUI_HoverEventArgs _hoverEvent)
+        {
+            if (_activationDistance_mode == GlobalLocalMode.Global)
+            {
+                currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.position, m_buttonPressValue_point2.position);
+            }
+            else
+            {
+                currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.localPosition, m_buttonPressValue_point2.localPosition);
+            }
+        }
 
         public virtual void Activation_Start(DHUI_ButtonActivationEventArgs _buttonActivationEventArgs)
         {

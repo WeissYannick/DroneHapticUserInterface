@@ -71,7 +71,7 @@ namespace DHUI
         {
             base.Hover_Start(_hoverEvent);
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_center.position, m_center.rotation, _droneSpeed);
-            m_flightController.AddToFrontOfQueue(cmd, true, true);
+            m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
         }
 
         public override void Hover_End(DHUI_HoverEventArgs _hoverEvent)
@@ -93,7 +93,7 @@ namespace DHUI
             }
             
             DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_center.position, m_center.rotation, _droneSpeed);
-            m_flightController.AddToFrontOfQueue(cmd, true, true);
+            m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
 
             if (SwitchState)
             {

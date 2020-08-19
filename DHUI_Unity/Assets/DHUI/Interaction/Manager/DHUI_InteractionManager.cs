@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DHUI.Core;
 
 namespace DHUI
 {
@@ -14,9 +15,24 @@ namespace DHUI
         [SerializeField]
         private DHUI_Hand m_rightHand = null;
         [SerializeField]
+        private DHUI_Hand m_leftRetargetedHand = null;
+        [SerializeField]
+        private DHUI_Hand m_rightRetargetedHand = null;
+        [SerializeField]
         private Transform m_head = null;
         [SerializeField]
-        private Transform m_interactionPoint = null;
+        private Transform m_physicalInteractionPoint = null;
+        [SerializeField]
+        private Transform m_virtualInteractionPoint = null;
+        [SerializeField]
+        private DHUI_DroneController m_droneController = null;
+        [SerializeField]
+        private DHUI_FlightController m_flightController = null;
+        [SerializeField]
+        private GameObject m_hapticRetargetingObject = null;
+
+        private DHUI_IHapticRetargeting hapticRetargeting = null;
+
         [Header("Settings")]
         [SerializeField]
         private float _maxReachableDistance = 1;
@@ -31,6 +47,11 @@ namespace DHUI
             get;
         } = ActiveHandState.None;
         public DHUI_Hand mainHand {
+            private set;
+            get;
+        } = null;
+        public DHUI_Hand mainRetargetedHand
+        {
             private set;
             get;
         } = null;
@@ -57,8 +78,28 @@ namespace DHUI
                 }
             }
         }
-        
+
         public static string InteractorTag = "DHUI_Interactor";
+        
+        public DHUI_IHapticRetargeting HapticRetargeting
+        {
+            get {
+                if (hapticRetargeting == null)
+                {
+                    hapticRetargeting = m_hapticRetargetingObject.GetComponent<DHUI_IHapticRetargeting>();
+                }
+                return hapticRetargeting; }
+        }
+
+        public DHUI_FlightController FlightController
+        {
+            get { return m_flightController; }
+        }
+
+        public DHUI_DroneController DroneController
+        {
+            get { return m_droneController; }
+        }
 
         #endregion Fields
 
@@ -110,16 +151,22 @@ namespace DHUI
                 case ActiveHandState.Both:
                 case ActiveHandState.Right:
                     mainHand = m_rightHand;
-                    m_interactionPoint.position = mainHand.Position;
+                    mainRetargetedHand = m_rightRetargetedHand;
+                    m_physicalInteractionPoint.position = mainHand.Position;
+                    m_virtualInteractionPoint.position = mainRetargetedHand.Position;
                     break;
                 case ActiveHandState.Left:
                     mainHand = m_leftHand;
-                    m_interactionPoint.position = mainHand.Position;
+                    mainRetargetedHand = m_leftRetargetedHand;
+                    m_physicalInteractionPoint.position = mainHand.Position;
+                    m_virtualInteractionPoint.position = mainRetargetedHand.Position;
                     break;
                 case ActiveHandState.None:
                 default:
                     mainHand = null;
-                    m_interactionPoint.position = m_head.position;
+                    mainRetargetedHand = null;
+                    m_physicalInteractionPoint.position = m_head.position;
+                    m_virtualInteractionPoint.position = m_head.position;
                     break;
             }
         }
@@ -176,7 +223,7 @@ namespace DHUI
                 }
 
                 // Get closest Interactable to the InteractionPoint
-                float distance = Vector3.Distance(m_interactionPoint.position, interactable.CenterPoint);
+                float distance = Vector3.Distance(m_physicalInteractionPoint.position, interactable.CenterPoint);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -208,7 +255,7 @@ namespace DHUI
         private DHUI_HoverEventArgs GenerateHoverEventArgs()
         {
             DHUI_HoverEventArgs hover = new DHUI_HoverEventArgs();
-            hover.InteractorPosition = m_interactionPoint.position;
+            hover.InteractorPosition = m_physicalInteractionPoint.position;
             return hover;
         }
 

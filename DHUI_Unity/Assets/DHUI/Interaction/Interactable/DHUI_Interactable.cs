@@ -13,9 +13,9 @@ namespace DHUI
         [SerializeField]
         protected DHUI_InteractionManager m_interactionManager = null;
         [SerializeField]
-        protected DHUI_FlightController m_flightController = null;
-        [SerializeField]
         protected Transform m_centerPoint = null;
+        [SerializeField]
+        protected List<Transform> m_touchBounds = new List<Transform>();
         
         [Header("Interactable.Events")]
         public DHUI_InteractableHoverEvent OnHoverStart = null;
@@ -33,6 +33,18 @@ namespace DHUI
         {
             get { return m_centerPoint.position; }
         }
+
+        public List<Vector3> TouchBounds
+        {
+            get {
+                List<Vector3> touchBoundPoints = new List<Vector3>();
+                foreach (Transform t in m_touchBounds)
+                {
+                    touchBoundPoints.Add(t.position);
+                }
+                return touchBoundPoints;
+            }
+        }
         
         public bool IsDisabled
         {
@@ -45,10 +57,6 @@ namespace DHUI
             if (m_interactionManager == null)
             {
                 m_interactionManager = FindObjectOfType<DHUI_InteractionManager>();
-            }
-            if (m_flightController == null)
-            {
-                m_flightController = FindObjectOfType<DHUI_FlightController>();
             }
             if (m_centerPoint == null)
             {

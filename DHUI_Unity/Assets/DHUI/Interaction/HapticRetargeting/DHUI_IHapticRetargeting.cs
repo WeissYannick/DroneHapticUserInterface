@@ -9,6 +9,7 @@ namespace DHUI
         void SetTargets(Transform virtualTarget, Transform physicalTarget);
         void EnableRetargeting();
         void DisableRetargeting();
-
+        void HoldRetargeting();
+        void UnholdRetargeting();
     }
 }

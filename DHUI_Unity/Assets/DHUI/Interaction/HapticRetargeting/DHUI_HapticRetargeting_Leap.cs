@@ -24,7 +24,11 @@ namespace DHUI
 
         private bool retargetingEnabled = false;
 
+        private bool retargetingHold = false;
+
         public AnimationCurve retargetingCurve = null;
+
+        private Vector3 retargetingVector = Vector3.zero;
 
         #region IHapticRetargeting
 
@@ -47,46 +51,63 @@ namespace DHUI
             retargetingEnabled = false;
         }
 
+        public void HoldRetargeting()
+        {
+            retargetingHold = true;
+        }
+
+        public void UnholdRetargeting()
+        {
+            retargetingHold = false;
+        }
+
         #endregion IHapticRetargeting
 
         #region PostProcessProvider
 
         public override void ProcessFrame(ref Frame inputFrame)
         {
-            if (physicalTarget == null || virtualTarget == null || !retargetingEnabled) return;
-
             foreach (var hand in inputFrame.Hands)
             {
                 Vector3 physicalHandPosition = transform.InverseTransformPoint(hand.PalmPosition.ToVector3());
                 Vector3 newPosition = transform.TransformPoint(physicalHandPosition);
 
-                if (retargetingOn)
+                if (retargetingEnabled && physicalTarget != null && virtualTarget != null)
                 {
-                    Vector3 currentPhysicalVector = transform.InverseTransformPoint(physicalTarget.position) - physicalHandPosition;
+                    if (retargetingHold)
+                    {
+                        newPosition = transform.TransformPoint(physicalHandPosition + retargetingVector);
+                    }
+                    else if (retargetingOn)
+                    {
+                        Vector3 currentPhysicalVector = transform.InverseTransformPoint(physicalTarget.position) - physicalHandPosition;
 
-                    float step = 0;
-                    step = currentPhysicalVector.magnitude / physicalVector.magnitude;
+                        float step = 0;
+                        step = currentPhysicalVector.magnitude / physicalVector.magnitude;
                 
 
-                    if (step > 1)
-                    {
+                        if (step > 1)
+                        {
 
-                        retargetingOn = false;
+                            retargetingOn = false;
+                        }
+                        else
+                        {
+                            retargetingVector = Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(virtualTarget.position) - transform.InverseTransformPoint(physicalTarget.position), retargetingCurve.Evaluate(1 - step));
+                            newPosition = transform.TransformPoint(physicalHandPosition + retargetingVector);
+                        }
                     }
                     else
                     {
-                        newPosition = transform.TransformPoint(physicalHandPosition + Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(virtualTarget.position) - transform.InverseTransformPoint(physicalTarget.position), retargetingCurve.Evaluate(1 - step)));
+                        if (Vector3.Distance(newPosition, transform.TransformPoint(physicalTarget.position)) < activationDistance)
+                        {
+                            startingPosition = transform.TransformPoint(physicalHandPosition);
+                            physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
+                            virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
+                            retargetingOn = true;
+                        }
                     }
-                }
-                else
-                {
-                    if (Vector3.Distance(newPosition, transform.TransformPoint(physicalTarget.position)) < activationDistance)
-                    {
-                        startingPosition = transform.TransformPoint(physicalHandPosition);
-                        physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
-                        virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
-                        retargetingOn = true;
-                    }
+
                 }
 
                 hand.SetTransform(newPosition,hand.Rotation.ToQuaternion());

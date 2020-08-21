@@ -279,10 +279,13 @@ namespace DHUI
                 if (hover_distance_staticPart < _hover_touchThreshold)
                 {
                     ButtonInternalState = ButtonInternalStates.Touched;
+                    m_interactionManager.HapticRetargeting?.HoldRetargeting();
                 }
                 else
                 {
                     ButtonInternalState = ButtonInternalStates.Hovered;
+
+                    m_interactionManager.HapticRetargeting?.UnholdRetargeting();
                 }
             }
             else
@@ -296,6 +299,7 @@ namespace DHUI
                     ButtonInternalState = ButtonInternalStates.Pressed;
                 }
             }
+            
         }
 
         protected virtual void UpdateDroneTargetPoint()
@@ -345,7 +349,7 @@ namespace DHUI
         protected virtual void HapticRetargeting_CenterToCenter()
         {
             m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
-            m_interactionManager.HapticRetargeting?.SetTargets(m_centerPoint_MovingPart, m_interactionManager.DroneController.contactPointTransform);
+            m_interactionManager.HapticRetargeting?.SetTargets(m_centerPoint_StaticPart, m_interactionManager.DroneController.contactPointTransform);
             m_interactionManager.HapticRetargeting?.EnableRetargeting();
         }
 

@@ -211,7 +211,7 @@ namespace DHUI
             foreach (DHUI_Touchable touchable in registeredTouchables)
             {
                 // Skip Disabled and Inactive Touchables
-                if (!touchable.isActiveAndEnabled || touchable.IsDisabled)
+                if (!touchable.isActiveAndEnabled || !touchable.IsEnabled)
                 {
                     continue;
                 }

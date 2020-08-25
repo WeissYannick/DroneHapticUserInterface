@@ -39,12 +39,16 @@ namespace DHUI
 
         #endregion Classes & Structs
 
-        #region Fields
+        #region Inspector Fields
 
         #region Fields.Setup
         [Header("Touchable.Setup")]
         [SerializeField]
         protected DHUI_InteractionManager m_interactionManager = null;
+        [SerializeField]
+        protected Transform m_centerPoint = null;
+        [SerializeField]
+        protected List<Transform> m_touchableBounds = new List<Transform>();
         #endregion Fields.Setup
 
         #region Fields.Events
@@ -79,16 +83,10 @@ namespace DHUI
         protected float _maxRetargetingDistance = 1;*/
         #endregion Fields.Settings
 
-        #region Fields.Points
-        [Header("Touchable.Points")]
-        [SerializeField]
-        protected Transform m_centerPoint = null;
-        [SerializeField]
-        protected List<Transform> m_touchableBounds = new List<Transform>();
-        #endregion Fields.Points
+        #endregion Inspector Fields
 
-        #endregion Fields
-        
+        #region Public Variables
+
         public Utils.MathPlane StaticContactPlane
         {
             get { return new Utils.MathPlane(m_centerPoint); }
@@ -112,11 +110,11 @@ namespace DHUI
             }
         }
 
-        public bool IsDisabled
+        public bool IsEnabled
         {
             get;
             private set;
-        }
+        } = true;
 
 
         private TouchableInternalStates internal_touchableState;
@@ -178,6 +176,10 @@ namespace DHUI
             }
         }
 
+        #endregion Public Variables
+
+        #region Private Variables
+
         private float lastTouched = 0f;
 
         private float currentTouchDuration {
@@ -185,6 +187,10 @@ namespace DHUI
         }
 
         private bool hapticRetargetingActive = false;
+
+        #endregion Private Variables
+
+        #region MonoBehaviour-Methods
 
         protected virtual void Start()
         {
@@ -218,9 +224,18 @@ namespace DHUI
             }
         }
 
+        #endregion MonoBehaviour-Methods
+
+        #region Registering
+
+        public void Enable()
+        {
+            IsEnabled = true;
+        }
+
         public void Disable()
         {
-            IsDisabled = true;
+            IsEnabled = false;
         }
 
         public void Register()
@@ -240,6 +255,10 @@ namespace DHUI
             }
             m_interactionManager?.DeregisterTouchable(this);
         }
+
+        #endregion Registering
+
+        #region Hover
 
         #region OnHover
 
@@ -269,31 +288,7 @@ namespace DHUI
 
         #endregion OnHover
 
-        #region OnTouch
-
-        public virtual void Touch_Start(DHUI_TouchEventArgs _touchEventArgs)
-        {
-            OnTouchStart?.Invoke(_touchEventArgs);
-        }
-
-        public virtual void Touch_Stay(DHUI_TouchEventArgs _touchEventArgs)
-        {
-            OnTouchStay?.Invoke(_touchEventArgs);
-        }
-
-        public virtual void Touch_End(DHUI_TouchEventArgs _touchEventArgs)
-        {
-            OnTouchEnd?.Invoke(_touchEventArgs);
-        }
-
-        protected DHUI_TouchEventArgs ConstructTouchEventArgs()
-        {
-            DHUI_TouchEventArgs args = new DHUI_TouchEventArgs();
-            args.TouchDuration = currentTouchDuration;
-            return args;
-        }
-
-        #endregion OnTouch
+        #region Drone Methods
 
         protected void SentDroneToInitialPosition()
         {
@@ -301,10 +296,14 @@ namespace DHUI
             m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
         }
 
+        #endregion Drone Methods
+
+        #region States
+
         protected virtual void UpdateTouchableStates(DHUI_HoverEventArgs _hoverEvent)
         {
             float dist = StaticContactPlane.GetDistance(_hoverEvent.InteractorVirtualPosition);
-            
+
             if (dist <= _touchThreshold)
             {
                 TouchableInternalState = TouchableInternalStates.Touch;
@@ -317,8 +316,12 @@ namespace DHUI
             {
                 TouchableInternalState = TouchableInternalStates.Hover;
             }
-            
+
         }
+
+        #endregion States
+
+        #region Haptic Retargeting
 
         protected virtual void SetupHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
         {
@@ -364,7 +367,7 @@ namespace DHUI
             foreach (Transform t in m_touchableBounds)
             {
                 Vector3 touchablePP = StaticContactPlane.GetProjectedPoint(t.position);
-                if (touchablePP.x > droneProjectedPoints[0].x && touchablePP.y < droneProjectedPoints[0].y && touchablePP.x < droneProjectedPoints[droneProjectedPoints.Count-1].x && touchablePP.y > droneProjectedPoints[droneProjectedPoints.Count - 1].y)
+                if (touchablePP.x > droneProjectedPoints[0].x && touchablePP.y < droneProjectedPoints[0].y && touchablePP.x < droneProjectedPoints[droneProjectedPoints.Count - 1].x && touchablePP.y > droneProjectedPoints[droneProjectedPoints.Count - 1].y)
                 {
                     continue;
                 }
@@ -394,7 +397,7 @@ namespace DHUI
                 m_interactionManager.HapticRetargeting?.SetTargets(m_touchableBounds[closestDronePointIndex], droneBoundingBox[closestDronePointIndex]);
                 m_interactionManager.HapticRetargeting?.EnableRetargeting();
             }
-            
+
         }
 
         protected virtual void UpdateHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
@@ -409,6 +412,35 @@ namespace DHUI
             }
         }
 
-    }
+        #endregion Haptic Retargeting
 
+        #endregion Hover
+
+        #region Touch
+
+        protected virtual void Touch_Start(DHUI_TouchEventArgs _touchEventArgs)
+        {
+            OnTouchStart?.Invoke(_touchEventArgs);
+        }
+
+        protected virtual void Touch_Stay(DHUI_TouchEventArgs _touchEventArgs)
+        {
+            OnTouchStay?.Invoke(_touchEventArgs);
+        }
+
+        protected virtual void Touch_End(DHUI_TouchEventArgs _touchEventArgs)
+        {
+            OnTouchEnd?.Invoke(_touchEventArgs);
+        }
+
+        protected DHUI_TouchEventArgs ConstructTouchEventArgs()
+        {
+            DHUI_TouchEventArgs args = new DHUI_TouchEventArgs();
+            args.TouchDuration = currentTouchDuration;
+            return args;
+        }
+
+        #endregion Touch
+        
+    }
 }

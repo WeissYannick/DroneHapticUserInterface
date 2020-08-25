@@ -102,7 +102,7 @@ namespace DHUI
                         if (Vector3.Distance(newPosition, transform.TransformPoint(physicalTarget.position)) < activationDistance)
                         {
                             startingPosition = transform.TransformPoint(physicalHandPosition);
-                            physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
+                            physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition; // TODO: Maybe this line should be updated in the retargetingOn, instead of just one time (Because dronePosition can change)
                             virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
                             retargetingOn = true;
                         }

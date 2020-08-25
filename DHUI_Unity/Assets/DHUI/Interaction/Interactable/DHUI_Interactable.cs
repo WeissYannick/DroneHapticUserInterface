@@ -9,6 +9,7 @@ namespace DHUI
 {
     public abstract class DHUI_Interactable : MonoBehaviour
     {
+        
         [Header("Interactable.Setup")]
         [SerializeField]
         protected DHUI_InteractionManager m_interactionManager = null;
@@ -87,7 +88,7 @@ namespace DHUI
             {
                 m_interactionManager = FindObjectOfType<DHUI_InteractionManager>();
             }
-            m_interactionManager?.RegisterInteractable(this);
+            //m_interactionManager?.RegisterInteractable(this);
         }   
 
         public void Deregister()
@@ -96,7 +97,7 @@ namespace DHUI
             {
                 m_interactionManager = FindObjectOfType<DHUI_InteractionManager>();
             }
-            m_interactionManager?.DeregisterInteractable(this);
+            //m_interactionManager?.DeregisterInteractable(this);
         }
 
         public virtual void Hover_Start(DHUI_HoverEventArgs _hoverEvent)

@@ -56,25 +56,25 @@ namespace DHUI
             get;
         } = null;
 
-        private HashSet<DHUI_Interactable> registeredInteractables = new HashSet<DHUI_Interactable>();
+        private HashSet<DHUI_Touchable> registeredTouchables = new HashSet<DHUI_Touchable>();
 
-        private DHUI_Interactable internal_activeInteractable;
-        public DHUI_Interactable ActiveInteractable
+        private DHUI_Touchable internal_activeTouchable;
+        public DHUI_Touchable ActiveTouchable
         {
-            get { return internal_activeInteractable; }
+            get { return internal_activeTouchable; }
             private set
             {
-                if (internal_activeInteractable != value)
+                if (internal_activeTouchable != value)
                 {
-                    if (internal_activeInteractable != null)
+                    if (internal_activeTouchable != null)
                     {
-                        internal_activeInteractable.Hover_End(GenerateHoverEventArgs());
+                        internal_activeTouchable.Hover_End(GenerateHoverEventArgs());
                     }
                     if (value != null)
                     {
                         value.Hover_Start(GenerateHoverEventArgs());
                     }
-                    internal_activeInteractable = value;
+                    internal_activeTouchable = value;
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace DHUI
         private void FixedUpdate()
         {
             UpdateHands();
-            UpdateInteractables();
+            UpdateTouchables();
         }
 
         #endregion UpdateLoop
@@ -173,89 +173,90 @@ namespace DHUI
 
         #endregion Hands
 
-        #region Interactables
+        #region Touchables
 
-        #region Interactables.Registering
+        #region Touchables.Registering
 
-        public void RegisterInteractable(DHUI_Interactable _interactable)
+        public void RegisterTouchable(DHUI_Touchable _touchable)
         {
-            registeredInteractables.Add(_interactable);
+            registeredTouchables.Add(_touchable);
         }
 
-        public void DeregisterInteractable(DHUI_Interactable _interactable)
+        public void DeregisterTouchable(DHUI_Touchable _touchable)
         {
-            registeredInteractables.Remove(_interactable);
+            registeredTouchables.Remove(_touchable);
         }
 
-        private void ClearRegisteredInteractables()
+        private void ClearRegisteredTouchables()
         {
-            registeredInteractables.Clear();
+            registeredTouchables.Clear();
         }
 
-        #endregion Interactables.Registering
+        #endregion Touchables.Registering
 
-        #region Interactables.Updating
+        #region Touchables.Updating
 
-        private void UpdateInteractables() {
+        private void UpdateTouchables() {
             
-            CheckClosestInteractable();
-            UpdateCurrentActiveInteractable();
+            CheckClosestTouchable();
+            UpdateCurrentActiveTouchable();
         }
 
-        private void CheckClosestInteractable()
+        private void CheckClosestTouchable()
         {
             float closestDistance = float.MaxValue;
             Vector2 bodyCenter2D = new Vector2(m_head.position.x, m_head.position.z);
 
-            DHUI_Interactable closestInteractable = null;
-            foreach (DHUI_Interactable interactable in registeredInteractables)
+            DHUI_Touchable closestTouchable = null;
+            foreach (DHUI_Touchable touchable in registeredTouchables)
             {
-                // Skip Disabled and Inactive Interactables
-                if (!interactable.isActiveAndEnabled || interactable.IsDisabled)
+                // Skip Disabled and Inactive Touchables
+                if (!touchable.isActiveAndEnabled || touchable.IsDisabled)
                 {
                     continue;
                 }
-                // Skip Interactables to close to the user's body.
-                Vector2 interactableCenter2D = new Vector2(interactable.CenterPoint.x, interactable.CenterPoint.z);
-                if (Vector2.Distance(bodyCenter2D, interactableCenter2D) <= _bodyDangerRadius && interactable != ActiveInteractable)
+                // Skip Touchables to close to the user's body.
+                Vector2 touchableCenter2D = new Vector2(touchable.CenterPoint.x, touchable.CenterPoint.z);
+                if (Vector2.Distance(bodyCenter2D, touchableCenter2D) <= _bodyDangerRadius && touchable != ActiveTouchable)
                 {
                     continue;
                 }
 
-                // Get closest Interactable to the InteractionPoint
-                float distance = Vector3.Distance(m_physicalInteractionPoint.position, interactable.CenterPoint);
+                // Get closest Touchable to the InteractionPoint
+                float distance = Vector3.Distance(m_physicalInteractionPoint.position, touchable.CenterPoint);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
-                    closestInteractable = interactable;
+                    closestTouchable = touchable;
                 }
             }
 
             if (closestDistance <= _maxReachableDistance)
             {
-                ActiveInteractable = closestInteractable;
+                ActiveTouchable = closestTouchable;
             }
             else
             {
-                ActiveInteractable = null;
+                ActiveTouchable = null;
             }
         }
 
-        private void UpdateCurrentActiveInteractable()
+        private void UpdateCurrentActiveTouchable()
         {
-            ActiveInteractable?.Hover_Stay(GenerateHoverEventArgs());
+            ActiveTouchable?.Hover_Stay(GenerateHoverEventArgs());
         }
 
-        #endregion Interactables.Updating
+        #endregion Touchables.Updating
 
-        #endregion Interactables
+        #endregion Touchables
 
         #region HoverEvent
         
-        private DHUI_HoverEventArgs GenerateHoverEventArgs()
+        private DHUI_Touchable.DHUI_HoverEventArgs GenerateHoverEventArgs()
         {
-            DHUI_HoverEventArgs hover = new DHUI_HoverEventArgs();
-            hover.InteractorPosition = m_physicalInteractionPoint.position;
+            DHUI_Touchable.DHUI_HoverEventArgs hover = new DHUI_Touchable.DHUI_HoverEventArgs();
+            hover.InteractorPhysicalPosition = m_physicalInteractionPoint.position;
+            hover.InteractorVirtualPosition = m_virtualInteractionPoint.position;
             return hover;
         }
 

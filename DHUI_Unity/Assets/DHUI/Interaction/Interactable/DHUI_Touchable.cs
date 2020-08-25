@@ -37,7 +37,7 @@ namespace DHUI
             NoRetargeting, CenterToCenter, Encapsulate
         }
 
-        #endregion Classes & Structs
+        #endregion Classes/Structs/Enums
 
         #region Inspector Fields
 
@@ -185,9 +185,7 @@ namespace DHUI
         private float currentTouchDuration {
             get { return Time.time - lastTouched; }
         }
-
-        private bool hapticRetargetingActive = false;
-
+        
         #endregion Private Variables
 
         #region MonoBehaviour-Methods
@@ -274,10 +272,7 @@ namespace DHUI
             OnHoverStay?.Invoke(_hoverEventArgs);
             UpdateTouchableStates(_hoverEventArgs);
             UpdateHapticRetargeting(_hoverEventArgs);
-            if (TouchedState)
-            {
-                Touch_Stay(ConstructTouchEventArgs());
-            }
+            UpdateTouchStay();
         }
 
         public virtual void Hover_End(DHUI_HoverEventArgs _hoverEventArgs)
@@ -431,6 +426,14 @@ namespace DHUI
         protected virtual void Touch_End(DHUI_TouchEventArgs _touchEventArgs)
         {
             OnTouchEnd?.Invoke(_touchEventArgs);
+        }
+
+        protected void UpdateTouchStay()
+        {
+            if (TouchedState)
+            {
+                Touch_Stay(ConstructTouchEventArgs());
+            }
         }
 
         protected DHUI_TouchEventArgs ConstructTouchEventArgs()

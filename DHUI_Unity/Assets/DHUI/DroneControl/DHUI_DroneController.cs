@@ -42,14 +42,26 @@ namespace DHUI.Core
         [SerializeField][Tooltip("Transform of the center point of the front face of the drone.")]
         private Transform _dronePoint_frontFace = null;
 
+        [SerializeField][Tooltip("Transforms of the bounding box points of the front face of the drone.")]
+        private List<Transform> _dronePoint_frontFaceBoundingPoints = new List<Transform>();
+
         [SerializeField][Tooltip("Transform of the center point of the back face of the drone.")]
         private Transform _dronePoint_backFace = null;
 
+        [SerializeField][Tooltip("Transforms of the bounding box points of the back face of the drone.")]
+        private List<Transform> _dronePoint_backFaceBoundingPoints = new List<Transform>();
+
         [SerializeField][Tooltip("Transform of the center point of the left face of the drone.")]
         private Transform _dronePoint_leftFace = null;
+        
+        [SerializeField][Tooltip("Transforms of the bounding box points of the left face of the drone.")]
+        private List<Transform> _dronePoint_leftFaceBoundingPoints = new List<Transform>();
 
         [SerializeField][Tooltip("Transform of the center point of the right face of the drone.")]
         private Transform _dronePoint_rightFace = null;
+
+        [SerializeField][Tooltip("Transforms of the bounding box points of the right face of the drone.")]
+        private List<Transform> _dronePoint_rightFaceBoundingPoints = new List<Transform>();
         #endregion Fields | Setup
 
         #region Fields | Public Settings
@@ -236,6 +248,9 @@ namespace DHUI.Core
             }
         }
 
+        /// <summary>
+        /// The transform of the actual contact plane/point (transform of the center point of the currently active Face).
+        /// </summary>
         public Transform contactPointTransform
         {
             get
@@ -262,6 +277,38 @@ namespace DHUI.Core
                         break;
                 }
                 return contactPoint;
+            }
+        }
+
+        /// <summary>
+        /// The transforms of the bounding box points of the currently active Face.
+        /// </summary>
+        public List<Transform> contactFaceBoundingBox
+        {
+            get
+            {
+                List<Transform> boundingBoxPoints = new List<Transform>();
+                switch (currentActiveFace)
+                {
+                    case DroneActiveFaceOptions.Center:
+                        boundingBoxPoints = _dronePoint_frontFaceBoundingPoints;
+                        break;
+                    case DroneActiveFaceOptions.Front:
+                        boundingBoxPoints = _dronePoint_frontFaceBoundingPoints;
+                        break;
+                    case DroneActiveFaceOptions.Back:
+                        boundingBoxPoints = _dronePoint_backFaceBoundingPoints;
+                        break;
+                    case DroneActiveFaceOptions.Left:
+                        boundingBoxPoints = _dronePoint_leftFaceBoundingPoints;
+                        break;
+                    case DroneActiveFaceOptions.Right:
+                        boundingBoxPoints = _dronePoint_rightFaceBoundingPoints;
+                        break;
+                    default:
+                        break;
+                }
+                return boundingBoxPoints;
             }
         }
 

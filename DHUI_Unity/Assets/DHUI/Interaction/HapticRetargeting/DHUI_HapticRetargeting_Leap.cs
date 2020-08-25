@@ -17,7 +17,6 @@ namespace DHUI
 
 
         protected Vector3 startingPosition = Vector3.zero;
-        protected Vector3 physicalVector = Vector3.zero;
         protected Vector3 virtualVector = Vector3.zero;
 
         private bool retargetingOn = false;
@@ -69,8 +68,8 @@ namespace DHUI
         {
             foreach (var hand in inputFrame.Hands)
             {
-                Vector3 physicalHandPosition = transform.InverseTransformPoint(hand.PalmPosition.ToVector3());
-                Vector3 newPosition = transform.TransformPoint(physicalHandPosition);
+                Vector3 newPosition = hand.PalmPosition.ToVector3();
+                Vector3 physicalHandPosition = transform.InverseTransformPoint(newPosition);
 
                 if (retargetingEnabled && physicalTarget != null && virtualTarget != null)
                 {
@@ -81,14 +80,13 @@ namespace DHUI
                     else if (retargetingOn)
                     {
                         Vector3 currentPhysicalVector = transform.InverseTransformPoint(physicalTarget.position) - physicalHandPosition;
+                        Vector3 physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
 
                         float step = 0;
                         step = currentPhysicalVector.magnitude / physicalVector.magnitude;
                 
-
                         if (step > 1)
                         {
-
                             retargetingOn = false;
                         }
                         else
@@ -102,7 +100,6 @@ namespace DHUI
                         if (Vector3.Distance(newPosition, transform.TransformPoint(physicalTarget.position)) < activationDistance)
                         {
                             startingPosition = transform.TransformPoint(physicalHandPosition);
-                            physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition; // TODO: Maybe this line should be updated in the retargetingOn, instead of just one time (Because dronePosition can change)
                             virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
                             retargetingOn = true;
                         }

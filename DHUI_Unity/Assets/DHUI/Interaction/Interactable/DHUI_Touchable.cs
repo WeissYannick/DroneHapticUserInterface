@@ -74,8 +74,9 @@ namespace DHUI
         protected HapticRetargetingMode _hapticRetargetingMode = HapticRetargetingMode.NoRetargeting;
         [SerializeField]
         protected float _retargetingActivationDistance = 1;
+        /*
         [SerializeField]
-        protected float _maxRetargetingDistance = 1;
+        protected float _maxRetargetingDistance = 1;*/
         #endregion Fields.Settings
 
         #region Fields.Points
@@ -183,6 +184,7 @@ namespace DHUI
             get { return Time.time - lastTouched; }
         }
 
+        private bool hapticRetargetingActive = false;
 
         protected virtual void Start()
         {
@@ -245,6 +247,7 @@ namespace DHUI
         {
             OnHoverStart?.Invoke(_hoverEventArgs);
             SentDroneToInitialPosition();
+            SetupHapticRetargeting(_hoverEventArgs);
         }
 
         public virtual void Hover_Stay(DHUI_HoverEventArgs _hoverEventArgs)
@@ -252,7 +255,6 @@ namespace DHUI
             OnHoverStay?.Invoke(_hoverEventArgs);
             UpdateTouchableStates(_hoverEventArgs);
             UpdateHapticRetargeting(_hoverEventArgs);
-
             if (TouchedState)
             {
                 Touch_Stay(ConstructTouchEventArgs());
@@ -318,12 +320,94 @@ namespace DHUI
             
         }
 
+        protected virtual void SetupHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
+        {
+            switch (_hapticRetargetingMode)
+            {
+                case HapticRetargetingMode.CenterToCenter:
+                    HapticRetargeting_CenterToCenter();
+                    break;
+                case HapticRetargetingMode.Encapsulate:
+                    HapticRetargeting_Encapsulate();
+                    break;
+                case HapticRetargetingMode.NoRetargeting:
+                default:
+                    HapticRetargeting_NoRetargeting();
+                    break;
+            }
+        }
+
+        protected virtual void HapticRetargeting_NoRetargeting()
+        {
+            m_interactionManager.HapticRetargeting?.DisableRetargeting();
+        }
+
+        protected virtual void HapticRetargeting_CenterToCenter()
+        {
+            m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
+            m_interactionManager.HapticRetargeting?.SetTargets(m_centerPoint, m_interactionManager.DroneController.contactPointTransform);
+            m_interactionManager.HapticRetargeting?.EnableRetargeting();
+        }
+
+        protected virtual void HapticRetargeting_Encapsulate()
+        {
+            List<Transform> droneBoundingBox = m_interactionManager.DroneController.contactFaceBoundingBox;
+            float closestDronePointDist = float.MaxValue;
+            int closestDronePointIndex = 0;
+
+            List<Vector3> droneProjectedPoints = new List<Vector3>();
+            bool inside = true;
+            foreach (Transform t in droneBoundingBox)
+            {
+                droneProjectedPoints.Add(StaticContactPlane.GetProjectedPoint(t.position));
+            }
+            foreach (Transform t in m_touchableBounds)
+            {
+                Vector3 touchablePP = StaticContactPlane.GetProjectedPoint(t.position);
+                if (touchablePP.x > droneProjectedPoints[0].x && touchablePP.y < droneProjectedPoints[0].y && touchablePP.x < droneProjectedPoints[droneProjectedPoints.Count-1].x && touchablePP.y > droneProjectedPoints[droneProjectedPoints.Count - 1].y)
+                {
+                    continue;
+                }
+                else
+                {
+                    inside = false;
+                    break;
+                }
+            }
+            if (inside)
+            {
+                // TODO: Retarget Z only, since xy are inside the touchable surface of the drone
+            }
+            else
+            {
+                for (int dronePointCounter = 0; dronePointCounter < droneBoundingBox.Count; dronePointCounter++)
+                {
+                    float dist = Vector3.Distance(CenterPoint, droneBoundingBox[dronePointCounter].position);
+                    if (dist < closestDronePointDist)
+                    {
+                        closestDronePointIndex = dronePointCounter;
+                        closestDronePointDist = dist;
+                    }
+                }
+
+                m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
+                m_interactionManager.HapticRetargeting?.SetTargets(m_touchableBounds[closestDronePointIndex], droneBoundingBox[closestDronePointIndex]);
+                m_interactionManager.HapticRetargeting?.EnableRetargeting();
+            }
+            
+        }
+
         protected virtual void UpdateHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
         {
-
-            //TODO
+            if (TouchableInternalState == TouchableInternalStates.Touch)
+            {
+                m_interactionManager.HapticRetargeting?.HoldRetargeting();
+            }
+            else
+            {
+                m_interactionManager.HapticRetargeting?.UnholdRetargeting();
+            }
         }
-        
 
     }
 

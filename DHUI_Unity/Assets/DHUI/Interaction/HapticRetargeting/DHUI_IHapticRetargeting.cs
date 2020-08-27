@@ -11,5 +11,7 @@ namespace DHUI
         void DisableRetargeting();
         void HoldRetargeting();
         void UnholdRetargeting();
+        void LockTargetPositions();
+        void UnlockTargetPositions();
     }
 }

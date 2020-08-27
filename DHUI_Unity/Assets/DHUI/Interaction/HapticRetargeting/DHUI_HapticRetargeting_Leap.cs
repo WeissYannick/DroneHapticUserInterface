@@ -14,9 +14,9 @@ namespace DHUI
         protected Transform physicalTarget = null;
         [SerializeField]
         protected float activationDistance = 1;
-
-
+        
         protected Vector3 startingPosition = Vector3.zero;
+
         protected Vector3 virtualVector = Vector3.zero;
 
         private bool retargetingOn = false;
@@ -25,9 +25,15 @@ namespace DHUI
 
         private bool retargetingHold = false;
 
+        private bool retargetingLocked = false;
+
         public AnimationCurve retargetingCurve = null;
 
         private Vector3 retargetingVector = Vector3.zero;
+
+        private Vector3 currentVirtualTargetPos = Vector3.zero;
+
+        private Vector3 currentPhysicalTargetPos = Vector3.zero;
 
         #region IHapticRetargeting
 
@@ -60,18 +66,34 @@ namespace DHUI
             retargetingHold = false;
         }
 
+        public void LockTargetPositions()
+        {
+            retargetingLocked = true;
+        }
+
+        public void UnlockTargetPositions()
+        {
+            retargetingLocked = false;
+        }
+
         #endregion IHapticRetargeting
 
         #region PostProcessProvider
 
         public override void ProcessFrame(ref Frame inputFrame)
         {
+            if (!retargetingLocked && physicalTarget != null && virtualTarget != null)
+            {
+                currentVirtualTargetPos = virtualTarget.position;
+                currentPhysicalTargetPos = physicalTarget.position;
+            }
+
             foreach (var hand in inputFrame.Hands)
             {
                 Vector3 newPosition = hand.PalmPosition.ToVector3();
                 Vector3 physicalHandPosition = transform.InverseTransformPoint(newPosition);
 
-                if (retargetingEnabled && physicalTarget != null && virtualTarget != null)
+                if (retargetingEnabled)
                 {
                     if (retargetingHold)
                     {
@@ -79,8 +101,8 @@ namespace DHUI
                     }
                     else if (retargetingOn)
                     {
-                        Vector3 currentPhysicalVector = transform.InverseTransformPoint(physicalTarget.position) - physicalHandPosition;
-                        Vector3 physicalVector = transform.TransformPoint(physicalTarget.position) - startingPosition;
+                        Vector3 currentPhysicalVector = transform.InverseTransformPoint(currentPhysicalTargetPos) - physicalHandPosition;
+                        Vector3 physicalVector = transform.TransformPoint(currentPhysicalTargetPos) - startingPosition;
 
                         float step = 0;
                         step = currentPhysicalVector.magnitude / physicalVector.magnitude;
@@ -91,16 +113,16 @@ namespace DHUI
                         }
                         else
                         {
-                            retargetingVector = Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(virtualTarget.position) - transform.InverseTransformPoint(physicalTarget.position), retargetingCurve.Evaluate(1 - step));
+                            retargetingVector = Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(currentVirtualTargetPos) - transform.InverseTransformPoint(currentPhysicalTargetPos), retargetingCurve.Evaluate(1 - step));
                             newPosition = transform.TransformPoint(physicalHandPosition + retargetingVector);
                         }
                     }
                     else
                     {
-                        if (Vector3.Distance(newPosition, transform.TransformPoint(physicalTarget.position)) < activationDistance)
+                        if (Vector3.Distance(newPosition, transform.TransformPoint(currentPhysicalTargetPos)) < activationDistance)
                         {
                             startingPosition = transform.TransformPoint(physicalHandPosition);
-                            virtualVector = transform.TransformPoint(virtualTarget.position) - startingPosition;
+                            virtualVector = transform.TransformPoint(currentVirtualTargetPos) - startingPosition;
                             retargetingOn = true;
                         }
                     }

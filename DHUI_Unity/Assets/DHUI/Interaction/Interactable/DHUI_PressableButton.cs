@@ -117,6 +117,10 @@ namespace DHUI
             {
                 ButtonActivationState = true;
             }
+            else
+            {
+                ButtonActivationState = false;
+            }
         }
 
         #region OnActivation

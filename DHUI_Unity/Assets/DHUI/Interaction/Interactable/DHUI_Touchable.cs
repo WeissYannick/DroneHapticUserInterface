@@ -34,7 +34,7 @@ namespace DHUI
 
         public enum HapticRetargetingMode
         {
-            NoRetargeting, CenterToCenter, Encapsulate
+            NoRetargeting, PresetRetargeting, CenterToCenter, Encapsulate, ZOnly
         }
 
         #endregion Classes/Structs/Enums
@@ -49,6 +49,10 @@ namespace DHUI
         protected Transform m_centerPoint = null;
         [SerializeField]
         protected List<Transform> m_touchableBounds = new List<Transform>();
+        [SerializeField]
+        protected Transform m_hapticRetargeting_virtualTarget = null;
+        [SerializeField]
+        protected Transform m_hapticRetargeting_physicalTarget = null;
         #endregion Fields.Setup
 
         #region Fields.Events
@@ -78,9 +82,8 @@ namespace DHUI
         protected HapticRetargetingMode _hapticRetargetingMode = HapticRetargetingMode.NoRetargeting;
         [SerializeField]
         protected float _retargetingActivationDistance = 1;
-        /*
         [SerializeField]
-        protected float _maxRetargetingDistance = 1;*/
+        protected float _maxRetargetingDistance = 1;
         #endregion Fields.Settings
 
         #endregion Inspector Fields
@@ -320,19 +323,54 @@ namespace DHUI
 
         protected virtual void SetupHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
         {
+            m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
+            m_interactionManager.HapticRetargeting?.SetTargets(m_hapticRetargeting_virtualTarget, m_hapticRetargeting_physicalTarget);
+            m_interactionManager.HapticRetargeting?.EnableRetargeting();
+        }
+
+        protected virtual void UpdateHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
+        {
+            if (TouchableInternalState == TouchableInternalStates.Touch)
+            {
+                m_interactionManager.HapticRetargeting?.HoldRetargeting();
+            }
+            else
+            {
+                m_interactionManager.HapticRetargeting?.UnholdRetargeting();
+            }
+
+
             switch (_hapticRetargetingMode)
             {
+                case HapticRetargetingMode.PresetRetargeting:
+                    break;
                 case HapticRetargetingMode.CenterToCenter:
                     HapticRetargeting_CenterToCenter();
                     break;
                 case HapticRetargetingMode.Encapsulate:
                     HapticRetargeting_Encapsulate();
                     break;
+                case HapticRetargetingMode.ZOnly:
+                    HapticRetargeting_ZOnly();
+                    break;
                 case HapticRetargetingMode.NoRetargeting:
                 default:
                     HapticRetargeting_NoRetargeting();
                     break;
             }
+
+            if (Vector3.Distance(m_hapticRetargeting_virtualTarget.position, m_hapticRetargeting_physicalTarget.position) > _maxRetargetingDistance && _hapticRetargetingMode != HapticRetargetingMode.NoRetargeting && !TouchedState)
+            {
+                OverMaxRetargetingDistance();
+            }
+        }
+        
+        protected virtual void OverMaxRetargetingDistance()
+        {
+            // TODO: What to do if retargeting targets are too far apart?
+            // -> Idea: Hold out on retargeting and give feedback to user to wait
+
+            Debug.LogWarning("<b> DHUI </b> | Touchable | HapticRetargeting-Targets are too far apart. Wait for drone to be closer to the virtual Object.");
         }
 
         protected virtual void HapticRetargeting_NoRetargeting()
@@ -340,11 +378,15 @@ namespace DHUI
             m_interactionManager.HapticRetargeting?.DisableRetargeting();
         }
 
+        protected virtual void HapticRetargeting_PresetRetargeting()
+        {
+            // We do nothing here for now.
+        }
+
         protected virtual void HapticRetargeting_CenterToCenter()
         {
-            m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
-            m_interactionManager.HapticRetargeting?.SetTargets(m_centerPoint, m_interactionManager.DroneController.contactPointTransform);
-            m_interactionManager.HapticRetargeting?.EnableRetargeting();
+            m_hapticRetargeting_virtualTarget.position = m_centerPoint.position;
+            m_hapticRetargeting_physicalTarget.position = m_interactionManager.DroneController.contactPointTransform.position;
         }
 
         protected virtual void HapticRetargeting_Encapsulate()
@@ -374,7 +416,7 @@ namespace DHUI
             }
             if (inside)
             {
-                // TODO: Retarget Z only, since xy are inside the touchable surface of the drone
+                HapticRetargeting_ZOnly();
             }
             else
             {
@@ -387,25 +429,20 @@ namespace DHUI
                         closestDronePointDist = dist;
                     }
                 }
-
-                m_interactionManager.HapticRetargeting?.SetActivationDistance(_retargetingActivationDistance);
-                m_interactionManager.HapticRetargeting?.SetTargets(m_touchableBounds[closestDronePointIndex], droneBoundingBox[closestDronePointIndex]);
-                m_interactionManager.HapticRetargeting?.EnableRetargeting();
+                
+                m_hapticRetargeting_virtualTarget.position = m_touchableBounds[closestDronePointIndex].position;
+                m_hapticRetargeting_physicalTarget.position = droneBoundingBox[closestDronePointIndex].position;
             }
 
         }
-
-        protected virtual void UpdateHapticRetargeting(DHUI_HoverEventArgs _hoverEvent)
+        
+        protected virtual void HapticRetargeting_ZOnly()
         {
-            if (TouchableInternalState == TouchableInternalStates.Touch)
-            {
-                m_interactionManager.HapticRetargeting?.HoldRetargeting();
-            }
-            else
-            {
-                m_interactionManager.HapticRetargeting?.UnholdRetargeting();
-            }
+            m_hapticRetargeting_virtualTarget.position = m_centerPoint.position;
+            m_hapticRetargeting_physicalTarget.position = m_centerPoint.position + m_interactionManager.DroneController.contactPointTransform.position - StaticContactPlane.GetProjectedPoint(m_interactionManager.DroneController.contactPointTransform.position);
+
         }
+
 
         #endregion Haptic Retargeting
 

@@ -31,16 +31,18 @@ namespace DHUI
         protected Transform m_buttonPressValue_point1;
         [SerializeField]
         protected Transform m_buttonPressValue_point2;
-        [SerializeField]
 
         [Header("Button.Settings")]
+        [SerializeField]
         protected GlobalLocalMode _activationDistance_mode = GlobalLocalMode.Global;
         [SerializeField]
         protected float _activationDistance_threshold = 0.15f;
         [SerializeField]
         protected float _activationCooldown = 0.5f;
+        [SerializeField]
+        protected float _droneResistance = 1f;
 
-        
+
         [Header("Button.Events")]
         public DHUI_ButtonActivationEvent OnActivationStart = null;
         public DHUI_ButtonActivationEvent OnActivationStay = null;
@@ -101,7 +103,19 @@ namespace DHUI
             UpdateActivationCalculations();
             UpdateActivationStay();
         }
-        
+
+        protected override void Touch_Stay(DHUI_TouchEventArgs _touchEventArgs)
+        {
+            base.Touch_Stay(_touchEventArgs);
+            ApplyDroneResistance();
+        }
+
+        protected override void Touch_End(DHUI_TouchEventArgs _touchEventArgs)
+        {
+            base.Touch_End(_touchEventArgs);
+            ResetDroneTarget();
+        }
+
         protected virtual void UpdateActivationCalculations()
         {
             if (_activationDistance_mode == GlobalLocalMode.Global)
@@ -123,8 +137,21 @@ namespace DHUI
             }
         }
 
+        protected void ApplyDroneResistance()
+        {
+            Vector3 calculatedPos = m_centerPoint.position + m_centerPoint.forward * currentActivationDistance * (_droneResistance - 1);
+            m_droneTargetPoint.position = calculatedPos;
+            UpdateDronePosition(0);
+        }
+
+        protected void ResetDroneTarget()
+        {
+            m_droneTargetPoint.position = m_centerPoint.position;
+            UpdateDronePosition(0);
+        }
+
         #region OnActivation
-        
+
         public virtual void Activation_Start(DHUI_ButtonActivationEventArgs _buttonActivationEventArgs)
         {
             OnActivationStart?.Invoke(_buttonActivationEventArgs);

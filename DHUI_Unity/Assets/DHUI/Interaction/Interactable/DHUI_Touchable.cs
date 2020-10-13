@@ -53,6 +53,8 @@ namespace DHUI
         protected Transform m_hapticRetargeting_virtualTarget = null;
         [SerializeField]
         protected Transform m_hapticRetargeting_physicalTarget = null;
+        [SerializeField]
+        protected Transform m_droneTargetPoint = null;
         #endregion Fields.Setup
 
         #region Fields.Events
@@ -290,7 +292,21 @@ namespace DHUI
 
         protected void SentDroneToInitialPosition()
         {
-            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_centerPoint.position, m_centerPoint.rotation, _initialPositioningDroneSpeed);
+            if (m_droneTargetPoint == null)
+            {
+                m_droneTargetPoint = new GameObject("DroneTargetPoint").transform;
+                m_droneTargetPoint.transform.parent = transform;
+                m_droneTargetPoint.transform.position = m_centerPoint.position;
+                m_droneTargetPoint.transform.rotation = m_centerPoint.rotation;
+            }
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _initialPositioningDroneSpeed);
+            m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
+        }
+
+        protected void UpdateDronePosition(float _speed = 0.5f)
+        {
+            if (m_droneTargetPoint == null) return;
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(m_droneTargetPoint.position, m_droneTargetPoint.rotation, _speed);
             m_interactionManager.FlightController.AddToFrontOfQueue(cmd, true, true);
         }
 

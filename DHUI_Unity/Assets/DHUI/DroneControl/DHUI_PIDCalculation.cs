@@ -191,11 +191,13 @@ namespace DHUI.Core
         private double throttle_KD = 0.5;   
 
         private const int throttle_lowerLimit = 1000;
-        private const int throttle_upperLimit = 1550; // may be necessary to be adapted to more weight/other battery. theoretical max is 2000
+        [SerializeField]
+        private int throttle_upperLimit = 1550; // may be necessary to be adapted to more weight/other battery. theoretical max is 2000
         private const int throttle_integral_lowerLimit = -150;
         private const int throttle_integral_upperLimit = 150;
 
-        private const double throttle_hover = 1450; // needs to be evaluated for a different drone / weight setup
+        [SerializeField]
+        private double throttle_hover = 1450; // needs to be evaluated for a different drone / weight setup
         private const double throttle_smoothingFactor = 0.1;
 
         private double throttle_errorPrior = 0;
@@ -224,7 +226,8 @@ namespace DHUI.Core
 
             // Resulting Output
             double output = throttle_KP * error + throttle_KI * throttle_integral + throttle_KD * derivativeFilteredThrottle + throttle_hover;
-            Clamp(ref output, throttle_lowerLimit, throttle_upperLimit);            
+            Clamp(ref output, throttle_lowerLimit, throttle_upperLimit);       
+            
             return Convert.ToInt32(output);
         }
 

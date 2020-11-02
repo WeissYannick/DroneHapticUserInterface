@@ -36,7 +36,6 @@ namespace DHUI
         {
             NoRetargeting, PresetRetargeting, CenterToCenter, Encapsulate, ZOnly
         }
-
         #endregion Classes/Structs/Enums
 
         #region Inspector Fields
@@ -66,6 +65,8 @@ namespace DHUI
         public DHUI_TouchEvent OnTouchStart = null;
         public DHUI_TouchEvent OnTouchStay = null;
         public DHUI_TouchEvent OnTouchEnd = null;
+
+        public DHUI_HoverEvent OnRetractionEnd = null;
         #endregion Fields.Events
 
         #region Fields.Settings
@@ -78,6 +79,8 @@ namespace DHUI
         protected float _touchThreshold = 0.05f;
         [SerializeField]
         protected float _touchCooldown = 0.5f;
+        [SerializeField]
+        protected float _maxRetractionTime = 2f;
         [SerializeField]
         protected float _initialPositioningDroneSpeed = 0.5f;
         [SerializeField]
@@ -137,9 +140,9 @@ namespace DHUI
                     if (value == TouchableInternalStates.Touch)
                     {
                         float currentTime = Time.time;
-                        if (currentTime >= lastTouched + _touchCooldown)
+                        if (currentTime >= lastTouchedDown + _touchCooldown)
                         {
-                            lastTouched = currentTime;
+                            lastTouchedDown = Time.time;
                             TouchedState = true;
                         }
                         else
@@ -149,6 +152,8 @@ namespace DHUI
                     }
                     else if (internal_touchableState == TouchableInternalStates.Touch && value != internal_touchableState)
                     {
+                        //handRetracting = true;
+                        lastTouchedUp = Time.time;
                         TouchedState = false;
                     }
 
@@ -183,14 +188,18 @@ namespace DHUI
 
         #endregion Public Variables
 
-        #region Private Variables
-
-        private float lastTouched = 0f;
-
-        private float currentTouchDuration {
-            get { return Time.time - lastTouched; }
-        }
+        #region Private/Protected Variables
         
+        protected float lastTouchedDown = 0f;
+
+        protected float lastTouchedUp = 0f;
+
+        protected float currentTouchDuration {
+            get { return Time.time - lastTouchedDown; }
+        }
+
+        protected bool handRetracting = false;
+
         #endregion Private Variables
 
         #region MonoBehaviour-Methods
@@ -205,6 +214,10 @@ namespace DHUI
             {
                 m_centerPoint = transform;
             }
+        }
+
+        protected void OnEnable()
+        {
             if (!_manualRegistering)
             {
                 Register();
@@ -276,6 +289,7 @@ namespace DHUI
         {
             OnHoverStay?.Invoke(_hoverEventArgs);
             UpdateTouchableStates(_hoverEventArgs);
+            UpdateHandRetracting(_hoverEventArgs);
             UpdateHapticRetargeting(_hoverEventArgs);
             UpdateTouchStay();
         }
@@ -333,7 +347,21 @@ namespace DHUI
 
         }
 
+        protected void UpdateHandRetracting(DHUI_HoverEventArgs _hoverEventArgs)
+        {
+            if (handRetracting)
+            {
+                float dist = StaticContactPlane.GetDistance(_hoverEventArgs.InteractorPhysicalPosition);
+                if (internal_touchableState != TouchableInternalStates.Touch && ((Time.time >= lastTouchedUp + _maxRetractionTime) || dist >= _retargetingActivationDistance))
+                {
+                    handRetracting = false;
+                    OnRetractionEnd?.Invoke(_hoverEventArgs);
+                }
+            }
+        }
+
         #endregion States
+
 
         #region Haptic Retargeting
 
@@ -355,6 +383,14 @@ namespace DHUI
                 m_interactionManager.HapticRetargeting?.UnholdRetargeting();
             }
 
+            if (handRetracting)
+            {
+                m_interactionManager.HapticRetargeting?.LockTargetPositions();
+            }
+            else
+            {
+                m_interactionManager.HapticRetargeting?.UnlockTargetPositions();
+            }
 
             switch (_hapticRetargetingMode)
             {
@@ -374,18 +410,23 @@ namespace DHUI
                     HapticRetargeting_NoRetargeting();
                     break;
             }
-
-            if (Vector3.Distance(m_hapticRetargeting_virtualTarget.position, m_hapticRetargeting_physicalTarget.position) > _maxRetargetingDistance && _hapticRetargetingMode != HapticRetargetingMode.NoRetargeting && !TouchedState)
+            if (!handRetracting && TouchableInternalState != TouchableInternalStates.Touch && Vector3.Distance(m_hapticRetargeting_virtualTarget.position, m_hapticRetargeting_physicalTarget.position) > _maxRetargetingDistance && _hapticRetargetingMode != HapticRetargetingMode.NoRetargeting && !TouchedState)
             {
                 OverMaxRetargetingDistance();
+                return;
             }
+            else
+            {
+                m_interactionManager.HapticRetargeting?.EnableRetargeting();
+            }
+
         }
         
         protected virtual void OverMaxRetargetingDistance()
         {
             // TODO: What to do if retargeting targets are too far apart?
             // -> Idea: Hold out on retargeting and give feedback to user to wait
-
+            m_interactionManager.HapticRetargeting?.DisableRetargeting();
             Debug.LogWarning("<b> DHUI </b> | Touchable | HapticRetargeting-Targets are too far apart. Wait for drone to be closer to the virtual Object.");
         }
 

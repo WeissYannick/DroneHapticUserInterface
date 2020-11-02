@@ -113,7 +113,15 @@ namespace DHUI
                         }
                         else
                         {
-                            retargetingVector = Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(currentVirtualTargetPos) - transform.InverseTransformPoint(currentPhysicalTargetPos), retargetingCurve.Evaluate(1 - step));
+                            Vector3 newRetargetingVector = Vector3.Lerp(Vector3.zero, transform.InverseTransformPoint(currentVirtualTargetPos) - transform.InverseTransformPoint(currentPhysicalTargetPos), retargetingCurve.Evaluate(1 - step));
+                            if (newRetargetingVector.magnitude > retargetingVector.magnitude)
+                            {
+                                retargetingVector = newRetargetingVector;
+                            }
+                            else
+                            {
+                                retargetingVector = retargetingVector / (retargetingVector.magnitude / newRetargetingVector.magnitude);
+                            }
                             newPosition = transform.TransformPoint(physicalHandPosition + retargetingVector);
                         }
                     }

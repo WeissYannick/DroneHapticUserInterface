@@ -5,7 +5,7 @@
       "app_key": "application.generated.unity.dhui_unity.exe",
       "launch_type": "url",
       "url": "steam://launch/",
-      "action_manifest_path": "C:\\Users\\HIVE-Admin\\Documents\\GitHub\\DroneHapticUserInterface\\DHUI_Unity\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "action_manifest_path": "C:\\Users\\Nutzer\\Documents\\GitHub\\DroneHapticUserInterface\\DHUI_Unity\\Assets\\StreamingAssets\\SteamVR\\actions.json",
       "strings": {
         "en_us": {
           "name": "DHUI_Unity [Testing]"

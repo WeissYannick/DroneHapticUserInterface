@@ -82,7 +82,7 @@ namespace DHUI
 
         public override void ProcessFrame(ref Frame inputFrame)
         {
-            if (!retargetingLocked && physicalTarget != null && virtualTarget != null)
+            if (retargetingEnabled && !retargetingLocked && physicalTarget != null && virtualTarget != null)
             {
                 currentVirtualTargetPos = virtualTarget.position;
                 currentPhysicalTargetPos = physicalTarget.position;
@@ -93,8 +93,12 @@ namespace DHUI
                 Vector3 newPosition = hand.PalmPosition.ToVector3();
                 Vector3 physicalHandPosition = transform.InverseTransformPoint(newPosition);
 
-                if (retargetingEnabled)
+                if (!retargetingEnabled)
                 {
+                    hand.SetTransform(hand.PalmPosition.ToVector3(), hand.Rotation.ToQuaternion());
+                    return;
+                }
+                else { 
                     if (retargetingHold)
                     {
                         newPosition = transform.TransformPoint(physicalHandPosition + retargetingVector);
@@ -135,9 +139,9 @@ namespace DHUI
                         }
                     }
 
+                    hand.SetTransform(newPosition, hand.Rotation.ToQuaternion());
                 }
 
-                hand.SetTransform(newPosition,hand.Rotation.ToQuaternion());
             }
         }
 

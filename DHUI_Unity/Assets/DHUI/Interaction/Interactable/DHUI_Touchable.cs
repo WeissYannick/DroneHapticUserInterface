@@ -415,7 +415,7 @@ namespace DHUI
                 OverMaxRetargetingDistance();
                 return;
             }
-            else
+            else if (_hapticRetargetingMode != HapticRetargetingMode.NoRetargeting)
             {
                 m_interactionManager.HapticRetargeting?.EnableRetargeting();
             }

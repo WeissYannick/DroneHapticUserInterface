@@ -14,7 +14,8 @@ public class DHUI_FileOutput : MonoBehaviour
     [SerializeField]
     protected DHUI_DroneController _droneControl;
     [SerializeField]
-    protected string _fileName;
+    protected DHUI_FlightController _flightControl;
+    
 
     protected List<float> errors = new List<float>();
     protected List<float> errorsRetargeted = new List<float>();
@@ -23,7 +24,13 @@ public class DHUI_FileOutput : MonoBehaviour
     private System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.GetCultureInfo("de");
 
     protected bool record = false;
+
+    public Transform _baseTransform = null;
+    public List<Transform> _transforms = new List<Transform>();
     // 90Hz
+
+    private int maxCounter = 900;
+    private int counter = 0;
     protected void FixedUpdate()
     {
         if (record)
@@ -31,26 +38,77 @@ public class DHUI_FileOutput : MonoBehaviour
             errors.Add(Vector3.Distance(_target.position,_drone.position));
             errorsRetargeted.Add(GetHapticRetargetingDist());
             errorsRot.Add(Quaternion.Angle(_target.rotation, _drone.rotation));
-            Debug.Log(errors.Count);
+
+
+            if (counter == maxCounter)
+            {
+                NextTarget();
+                return;
+            }
+
+            counter++;
+
         }
 
         if (Input.GetKeyDown(KeyCode.A)){
             if (record)
             {
-                WriteFile();
+                Debug.Log("Canceled");
                 record = false;
             }
             else
             {
+                Debug.Log("Start");
                 errors = new List<float>();
                 errorsRetargeted = new List<float>();
                 errorsRot = new List<float>();
                 record = true;
+                counter = 0;
+
+                _target = _transforms[0];
+                DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(_transforms[0].position, _transforms[0].rotation, 0.2f);
+                _flightControl.AddToFrontOfQueue(cmd, true, true);
             }
         }
     }
 
-    protected void WriteFile()
+    private int target = 0;
+    private bool back = false;
+    private void NextTarget()
+    {
+        if (!back)
+        {
+            WriteFile("Test2_Target" + target + "_To.txt");
+            back = true;
+
+            _target = _baseTransform;
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(_baseTransform.position, _baseTransform.rotation, 0.2f);
+            _flightControl.AddToFrontOfQueue(cmd, true, true);
+        }
+        else
+        {
+            WriteFile("Test2_Target" + target + "_Back.txt");
+            back = false;
+            target++;
+            
+            if (target >= _transforms.Count)
+            {
+                Debug.Log("Done Recording");
+                record = false;
+                return;
+            }
+
+            _target = _transforms[target];
+            DHUI_FlightCommand_MoveTo cmd = new DHUI_FlightCommand_MoveTo(_transforms[target].position, _transforms[target].rotation, 0.2f);
+            _flightControl.AddToFrontOfQueue(cmd, true, true);
+        }
+        errors = new List<float>();
+        errorsRetargeted = new List<float>();
+        errorsRot = new List<float>();
+        counter = 0;
+    }
+
+    protected void WriteFile(string _fileName)
     {
 
 #if UNITY_EDITOR

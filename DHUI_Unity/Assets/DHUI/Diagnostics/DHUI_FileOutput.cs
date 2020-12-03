@@ -53,8 +53,6 @@ public class DHUI_FileOutput : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A)){
             if (record)
             {
-                Debug.Log("Canceled");
-                record = false;
             }
             else
             {

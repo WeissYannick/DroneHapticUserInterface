@@ -34,13 +34,13 @@ public class DHUI_FileOutput : MonoBehaviour
     protected void FixedUpdate()
     {
 
-        Debug.Log(Vector3.Distance(coll.ClosestPoint(_target.position), _target.position));
         if (record)
         {
             errors.Add(Vector3.Distance(_target.position,_drone.position));
             errorsRetargeted.Add(GetHapticRetargetingDist());
             errorsRot.Add(Quaternion.Angle(_target.rotation, _drone.rotation));
 
+            Debug.Log(Vector3.Distance(coll.ClosestPoint(_target.position), _target.position));
 
             if (counter == maxCounter)
             {
@@ -78,7 +78,7 @@ public class DHUI_FileOutput : MonoBehaviour
     {
         if (!back)
         {
-            WriteFile("Test3_Target" + target + "_To.txt");
+            WriteFile("Test5_Target" + target + "_To.txt");
             back = true;
 
             _target = _baseTransform;
@@ -87,7 +87,7 @@ public class DHUI_FileOutput : MonoBehaviour
         }
         else
         {
-            WriteFile("Test3_Target" + target + "_Back.txt");
+            WriteFile("Test5_Target" + target + "_Back.txt");
             back = false;
             target++;
             

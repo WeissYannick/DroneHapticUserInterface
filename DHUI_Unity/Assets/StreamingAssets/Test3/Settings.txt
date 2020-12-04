@@ -1,0 +1,16 @@
+Speed = 0.2
+PIDs: 
+Throttle 1.4/1/1 Upper: 1900 Hover: 1700
+Roll/Pitch: 1/0.6/2
+Yaw: 2
+
+
+Center Point: 1.5m Hight
+1 -> UserRight 0.5m
+2 -> UserLeft 0.5m
+3 -> Up 0.5m
+4 -> Down 0.5m
+5 -> Top right
+6 -> Top Left
+7 -> Bottom Left
+8 -> Bottom Right

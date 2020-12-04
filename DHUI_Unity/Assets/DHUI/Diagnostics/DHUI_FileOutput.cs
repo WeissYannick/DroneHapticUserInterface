@@ -33,6 +33,8 @@ public class DHUI_FileOutput : MonoBehaviour
     private int counter = 0;
     protected void FixedUpdate()
     {
+
+        Debug.Log(Vector3.Distance(coll.ClosestPoint(_target.position), _target.position));
         if (record)
         {
             errors.Add(Vector3.Distance(_target.position,_drone.position));
@@ -76,7 +78,7 @@ public class DHUI_FileOutput : MonoBehaviour
     {
         if (!back)
         {
-            WriteFile("Test2_Target" + target + "_To.txt");
+            WriteFile("Test3_Target" + target + "_To.txt");
             back = true;
 
             _target = _baseTransform;
@@ -85,7 +87,7 @@ public class DHUI_FileOutput : MonoBehaviour
         }
         else
         {
-            WriteFile("Test2_Target" + target + "_Back.txt");
+            WriteFile("Test3_Target" + target + "_Back.txt");
             back = false;
             target++;
             
@@ -142,9 +144,13 @@ public class DHUI_FileOutput : MonoBehaviour
         get { return new DHUI.Utils.MathPlane(_target); }
     }
 
-
+    public BoxCollider coll;
     protected float GetHapticRetargetingDist()
     {
+        return Vector3.Distance(coll.ClosestPoint(_target.position), _target.position);
+
+
+        
         List<Transform> droneBoundingBox = _droneControl.contactFaceBoundingBox;
         float closestDronePointDist = float.MaxValue;
         int closestDronePointIndex = 0;
@@ -154,12 +160,14 @@ public class DHUI_FileOutput : MonoBehaviour
         {
             droneProjectedPoints.Add(StaticContactPlane.GetProjectedPoint(t.position));
         }
-        
-        Vector3 touchablePP = StaticContactPlane.GetProjectedPoint(_target.position);
-        if (touchablePP.x > droneProjectedPoints[0].x && touchablePP.y < droneProjectedPoints[0].y && touchablePP.x < droneProjectedPoints[droneProjectedPoints.Count - 1].x && touchablePP.y > droneProjectedPoints[droneProjectedPoints.Count - 1].y)
-        {
-            return Vector3.Distance(_target.position, _target.position + _droneControl.contactPointTransform.position - StaticContactPlane.GetProjectedPoint(_droneControl.contactPointTransform.position));
+        Vector3 topleft = _target.InverseTransformPoint(droneProjectedPoints[0]);
+        Vector3 bottomright = _target.InverseTransformPoint(droneProjectedPoints[3]);
 
+        if (0 < topleft.x && 0 < topleft.y && 0 > bottomright.x && 0 > bottomright.y)
+        {
+            Debug.Log(true);
+            return Vector3.Distance(_droneControl.contactPointTransform.position,StaticContactPlane.GetProjectedPoint(_droneControl.contactPointTransform.position));
+            
         }
         else
         {

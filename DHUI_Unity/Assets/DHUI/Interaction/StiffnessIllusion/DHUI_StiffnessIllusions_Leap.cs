@@ -15,6 +15,11 @@ namespace DHUI
             displacementVector = _displacementVector;
         }
 
+        public void SetNoDisplacement()
+        {
+            displacementVector = Vector3.zero;
+        }
+
         public override void ProcessFrame(ref Frame inputFrame)
         {
             foreach (var hand in inputFrame.Hands)

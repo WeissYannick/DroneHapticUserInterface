@@ -116,6 +116,19 @@ namespace DHUI
             UpdateActivationStay();
         }
 
+        public override void Hover_Stay(DHUI_HoverEventArgs _hoverEventArgs)
+        {
+            if (_stiffnessIllusionActive && TouchedState)
+            {
+                UpdateStiffnessIllusion(currentActivationDistance);
+            }
+            else
+            {
+                UpdateStiffnessIllusion(0f);
+            }
+            base.Hover_Stay(_hoverEventArgs);
+        }
+
         protected override void Touch_Stay(DHUI_TouchEventArgs _touchEventArgs)
         {
             base.Touch_Stay(_touchEventArgs);
@@ -138,12 +151,7 @@ namespace DHUI
             {
                 currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.localPosition, m_buttonPressValue_point2.localPosition);
             }
-
-            if (_stiffnessIllusionActive && TouchedState)
-            {
-                UpdateStiffnessIllusion(currentActivationDistance);
-            }
-
+            
             if (currentActivationDistance > _activationDistance_threshold)
             {
                 ButtonActivationState = true;
@@ -169,7 +177,6 @@ namespace DHUI
                 m_movableVisualPart.position = m_buttonPressValue_point2.position + displacementVector;
             }
             m_interactionManager.StiffnessIllusion?.SetDisplacementVector(displacementVector);
-
         }
 
         protected void ApplyDroneResistance()

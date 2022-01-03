@@ -51,6 +51,8 @@ namespace DHUI
         protected float _cdrMaxDistance_threshold = 0.2f;
         [SerializeField]
         protected float _cdrMultiplier = 0.5f;
+        [SerializeField]
+        protected Transform m_movableVisualPart = null;
 
 
         [Header("Button.Events")]
@@ -162,6 +164,10 @@ namespace DHUI
             float displacementMagnitude = _cdrCurve.Evaluate(step) * _cdrMultiplier;
 
             Vector3 displacementVector = displacementDirection * displacementMagnitude;
+            if (m_movableVisualPart != null)
+            {
+                m_movableVisualPart.position = m_buttonPressValue_point2.position + displacementVector;
+            }
             m_interactionManager.StiffnessIllusion?.SetDisplacementVector(displacementVector);
 
         }

@@ -30,8 +30,11 @@ namespace DHUI
         private DHUI_FlightController m_flightController = null;
         [SerializeField]
         private GameObject m_hapticRetargetingObject = null;
+        [SerializeField]
+        private GameObject m_stiffnessIllusionObject = null;
 
         private DHUI_IHapticRetargeting hapticRetargeting = null;
+        private DHUI_IStiffnessIllusion stiffnessIllusion = null;
 
         [Header("Settings")]
         [SerializeField]
@@ -89,6 +92,18 @@ namespace DHUI
                     hapticRetargeting = m_hapticRetargetingObject.GetComponent<DHUI_IHapticRetargeting>();
                 }
                 return hapticRetargeting; }
+        }
+
+        public DHUI_IStiffnessIllusion StiffnessIllusion
+        {
+            get
+            {
+                if (stiffnessIllusion == null)
+                {
+                    stiffnessIllusion = m_stiffnessIllusionObject.GetComponent<DHUI_IStiffnessIllusion>();
+                }
+                return stiffnessIllusion;
+            }
         }
 
         public DHUI_FlightController FlightController

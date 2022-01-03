@@ -42,6 +42,16 @@ namespace DHUI
         [SerializeField]
         protected float _droneResistance = 1f;
 
+        [Header("Button.StiffnessIllusion")]
+        [SerializeField]
+        protected bool _stiffnessIllusionActive = false;
+        [SerializeField]    // cdr = Control/Display Ratio
+        protected AnimationCurve _cdrCurve = null;
+        [SerializeField]
+        protected float _cdrMaxDistance_threshold = 0.2f;
+        [SerializeField]
+        protected float _cdrMultiplier = 0.5f;
+
 
         [Header("Button.Events")]
         public DHUI_ButtonActivationEvent OnActivationStart = null;
@@ -127,6 +137,11 @@ namespace DHUI
                 currentActivationDistance = Vector3.Distance(m_buttonPressValue_point1.localPosition, m_buttonPressValue_point2.localPosition);
             }
 
+            if (_stiffnessIllusionActive && TouchedState)
+            {
+                UpdateStiffnessIllusion(currentActivationDistance);
+            }
+
             if (currentActivationDistance > _activationDistance_threshold)
             {
                 ButtonActivationState = true;
@@ -135,6 +150,20 @@ namespace DHUI
             {
                 ButtonActivationState = false;
             }
+        }
+
+        protected void UpdateStiffnessIllusion(float _currentDistance)
+        {
+            float step = _currentDistance / _cdrMaxDistance_threshold;
+            if (step < 0) step = 0;
+            else if (step > 1) step = 1;
+
+            Vector3 displacementDirection = (m_buttonPressValue_point2.position - m_buttonPressValue_point1.position).normalized;
+            float displacementMagnitude = _cdrCurve.Evaluate(step) * _cdrMultiplier;
+
+            Vector3 displacementVector = displacementDirection * displacementMagnitude;
+            m_interactionManager.StiffnessIllusion?.SetDisplacementVector(displacementVector);
+
         }
 
         protected void ApplyDroneResistance()
